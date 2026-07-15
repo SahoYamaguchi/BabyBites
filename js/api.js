@@ -48,9 +48,13 @@ export function addFood(foodName) {
 }
 
 export function addRecord({ date, foodName, amountLabel, amountGram, memo }) {
-  return requestJson(GAS_API_URL, {
-    method: "POST",
-    // headers: { "Content-Type": "text/plain;charset=utf-8" },
-    body: JSON.stringify({ action: "addRecord", date, foodName, amountLabel, amountGram, memo }),
+  const params = new URLSearchParams({
+    action: 'addRecord',
+    date: date || '',
+    foodName: foodName || '',
+    amountLabel: amountLabel || '',
+    amountGram: amountGram ?? '',
+    memo: memo || '',
   });
+  return requestJson(`${GAS_API_URL}?${params.toString()}`, { method: 'GET' });
 }
