@@ -15,12 +15,6 @@ var HEADERS = {
   foods: ['食材名', '登録日']
 };
 
-/**
- * Handles GET requests from the published web app.
- *
- * @param {GoogleAppsScript.Events.DoGet} e Request event.
- * @return {GoogleAppsScript.Content.TextOutput} JSON response.
- */
 function doGet(e) {
   try {
     var action = e && e.parameter ? e.parameter.action : '';
@@ -33,34 +27,13 @@ function doGet(e) {
       return jsonResponse({ success: true, foods: getFoodList() });
     }
 
-    return errorResponse('Unsupported action: ' + action);
-  } catch (error) {
-    return errorResponse(error.message || String(error));
-  }
-}
-
-/**
- * Handles POST requests from the published web app.
- *
- * @param {GoogleAppsScript.Events.DoPost} e Request event.
- * @return {GoogleAppsScript.Content.TextOutput} JSON response.
- */
-function doPost(e) {
-  try {
-    if (!e || !e.postData || !e.postData.contents) {
-      return errorResponse('Request body is required.');
-    }
-
-    var body = JSON.parse(e.postData.contents);
-    var action = body.action;
-
     if (action === 'addRecord') {
-      var result = addRecord(body);
+      var result = addRecord(e.parameter);
       return jsonResponse({ success: true, isFirstTime: result.isFirstTime });
     }
 
     if (action === 'addFood') {
-      addFood(body.foodName);
+      addFood(e.parameter.foodName);
       return jsonResponse({ success: true });
     }
 
@@ -68,6 +41,11 @@ function doPost(e) {
   } catch (error) {
     return errorResponse(error.message || String(error));
   }
+}
+
+// 念のためPOSTが来た場合もdoGetと同じ処理に流す
+function doPost(e) {
+  return doGet(e);
 }
 
 /**
