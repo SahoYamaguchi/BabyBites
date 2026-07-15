@@ -16,6 +16,8 @@ function buildApiUrl(action) {
 async function requestJson(url, options = {}) {
   ensureApiUrl();
 
+  options = {}
+
   const response = await fetch(url, options);
   if (!response.ok) {
     throw new Error(`API request failed: ${response.status}`);
@@ -40,7 +42,7 @@ export function getFoodList() {
 export function addFood(foodName) {
   return requestJson(GAS_API_URL, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
     body: JSON.stringify({ action: "addFood", foodName }),
   });
 }
@@ -48,7 +50,7 @@ export function addFood(foodName) {
 export function addRecord({ date, foodName, amountLabel, amountGram, memo }) {
   return requestJson(GAS_API_URL, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
     body: JSON.stringify({ action: "addRecord", date, foodName, amountLabel, amountGram, memo }),
   });
 }
