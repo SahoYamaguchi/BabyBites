@@ -52,6 +52,33 @@
           <input id="amount-gram" name="amountGram" type="number" inputmode="decimal" min="0" step="0.1" placeholder="例: 15" />
         </label>
 
+
+        <label class="field-group" for="spoon-count">
+          <span class="field-label">さじ何杯分 <span class="optional">任意</span></span>
+          <select id="spoon-count" name="spoonCount">
+            <option value="">未選択</option>
+            <option value="0.5">0.5杯</option>
+            <option value="1">1杯</option>
+            <option value="1.5">1.5杯</option>
+            <option value="2">2杯</option>
+            <option value="2.5">2.5杯</option>
+            <option value="3">3杯</option>
+            <option value="3.5">3.5杯</option>
+            <option value="4">4杯</option>
+          </select>
+        </label>
+
+        <label class="field-group" for="meal-type">
+          <span class="field-label">食事区分 <span class="optional">任意</span></span>
+          <select id="meal-type" name="mealType">
+            <option value="">未選択</option>
+            <option value="朝ごはん">朝ごはん</option>
+            <option value="昼ごはん">昼ごはん</option>
+            <option value="おやつ">おやつ</option>
+            <option value="夜ごはん">夜ごはん</option>
+          </select>
+        </label>
+
         <label class="field-group" for="date-time">
           <span class="field-label">日時</span>
           <input id="date-time" name="date" type="datetime-local" required />

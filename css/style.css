@@ -27,6 +27,7 @@ body {
 
 button,
 input,
+select,
 textarea {
   font: inherit;
 }
@@ -185,6 +186,7 @@ h1 {
 
 input[type="number"],
 input[type="datetime-local"],
+select,
 textarea {
   width: 100%;
   border: 2px solid var(--border);
@@ -269,7 +271,7 @@ textarea {
 
 .history-item-main {
   display: grid;
-  grid-template-columns: 58px 1fr;
+  grid-template-columns: minmax(82px, auto) 1fr;
   gap: 12px;
 }
 

@@ -6,17 +6,23 @@ function ensureApiUrl() {
   }
 }
 
-function buildApiUrl(action) {
+function buildApiUrl(action, params = {}) {
   ensureApiUrl();
   const url = new URL(GAS_API_URL);
-  url.searchParams.set("action", action);
+  const searchParams = new URLSearchParams({ action });
+
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== "") {
+      searchParams.set(key, value);
+    }
+  });
+
+  url.search = searchParams.toString();
   return url.toString();
 }
 
 async function requestJson(url, options = {}) {
   ensureApiUrl();
-
-  options = {}
 
   const response = await fetch(url, options);
   if (!response.ok) {
@@ -40,21 +46,17 @@ export function getFoodList() {
 }
 
 export function addFood(foodName) {
-  const params = new URLSearchParams({
-    action: 'addFood',
-    foodName: foodName || '',
-  });
-  return requestJson(`${GAS_API_URL}?${params.toString()}`, { method: 'GET' });
+  return requestJson(buildApiUrl("addFood", { foodName }));
 }
 
-export function addRecord({ date, foodName, amountLabel, amountGram, memo }) {
-  const params = new URLSearchParams({
-    action: 'addRecord',
-    date: date || '',
-    foodName: foodName || '',
-    amountLabel: amountLabel || '',
-    amountGram: amountGram ?? '',
-    memo: memo || '',
-  });
-  return requestJson(`${GAS_API_URL}?${params.toString()}`, { method: 'GET' });
+export function addRecord({ date, foodName, amountLabel, amountGram, spoonCount, mealType, memo }) {
+  return requestJson(buildApiUrl("addRecord", {
+    date,
+    foodName,
+    amountLabel,
+    amountGram,
+    spoonCount,
+    mealType,
+    memo,
+  }));
 }

@@ -48,12 +48,16 @@ function createRecordItem(record) {
   const item = document.createElement("article");
   item.className = "history-item";
 
-  const amountParts = [record.amountLabel, record.amountGram ? `${record.amountGram}g` : ""].filter(Boolean);
+  const amountParts = [
+    record.amountLabel,
+    record.amountGram ? `${record.amountGram}g` : "",
+    record.spoonCount ? `${record.spoonCount}杯` : "",
+  ].filter(Boolean);
   const memo = record.memo ? `<p class="history-memo">${escapeHtml(record.memo)}</p>` : "";
 
   item.innerHTML = `
     <div class="history-item-main">
-      <time class="history-time" datetime="${record.parsedDate.toISOString()}">${formatTime(record.parsedDate)}</time>
+      <time class="history-time" datetime="${record.parsedDate.toISOString()}">${record.mealType ? `[${escapeHtml(record.mealType)}] ` : ""}${formatTime(record.parsedDate)}</time>
       <div>
         <h3>${record.isFirstTime ? "🎉 " : ""}${escapeHtml(record.foodName || "未入力")}</h3>
         <p class="history-amount">${escapeHtml(amountParts.join(" / ") || "量未入力")}</p>
@@ -85,18 +89,21 @@ function renderHistory(records) {
     .sort((a, b) => b.parsedDate.getTime() - a.parsedDate.getTime());
   const groupedRecords = groupRecordsByDate(normalizedRecords);
 
-  groupedRecords.forEach((dateRecords) => {
-    dateRecords.sort((a, b) => a.parsedDate.getTime() - b.parsedDate.getTime());
+  [...groupedRecords.entries()]
+    .sort(([dateA], [dateB]) => dateB.localeCompare(dateA))
+    .forEach(([, dateRecords]) => {
+      dateRecords.sort((a, b) => b.parsedDate.getTime() - a.parsedDate.getTime());
 
-    const section = document.createElement("section");
-    section.className = "history-day";
 
-    const heading = document.createElement("h2");
-    heading.textContent = formatDateHeading(dateRecords[0].parsedDate);
-    section.append(heading);
+      const section = document.createElement("section");
+      section.className = "history-day";
 
-    dateRecords.forEach((record) => section.append(createRecordItem(record)));
-    historyList.append(section);
+      const heading = document.createElement("h2");
+      heading.textContent = formatDateHeading(dateRecords[0].parsedDate);
+      section.append(heading);
+
+      dateRecords.forEach((record) => section.append(createRecordItem(record)));
+      historyList.append(section);
   });
 }
 

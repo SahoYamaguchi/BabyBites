@@ -6,6 +6,8 @@ const foodButtons = document.querySelector("#food-buttons");
 const addFoodButton = document.querySelector("#add-food-button");
 const form = document.querySelector("#record-form");
 const amountGramInput = document.querySelector("#amount-gram");
+const spoonCountInput = document.querySelector("#spoon-count");
+const mealTypeInput = document.querySelector("#meal-type");
 const dateTimeInput = document.querySelector("#date-time");
 const memoInput = document.querySelector("#memo");
 const statusMessage = document.querySelector("#status-message");
@@ -119,6 +121,8 @@ form.addEventListener("submit", async (event) => {
       foodName: selectedFood,
       amountLabel,
       amountGram,
+      spoonCount: spoonCountInput.value,
+      mealType: mealTypeInput.value,
       memo: memoInput.value.trim(),
     });
 
