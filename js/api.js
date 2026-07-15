@@ -50,7 +50,7 @@ export function addFood(foodName) {
 export function addRecord({ date, foodName, amountLabel, amountGram, memo }) {
   return requestJson(GAS_API_URL, {
     method: "POST",
-    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    // headers: { "Content-Type": "text/plain;charset=utf-8" },
     body: JSON.stringify({ action: "addRecord", date, foodName, amountLabel, amountGram, memo }),
   });
 }
