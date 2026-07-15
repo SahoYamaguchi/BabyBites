@@ -52,7 +52,6 @@
           <input id="amount-gram" name="amountGram" type="number" inputmode="decimal" min="0" step="0.1" placeholder="例: 15" />
         </label>
 
-
         <label class="field-group" for="spoon-count">
           <span class="field-label">さじ何杯分 <span class="optional">任意</span></span>
           <select id="spoon-count" name="spoonCount">
@@ -68,16 +67,17 @@
           </select>
         </label>
 
-        <label class="field-group" for="meal-type">
+        <div class="field-group">
           <span class="field-label">食事区分 <span class="optional">任意</span></span>
-          <select id="meal-type" name="mealType">
-            <option value="">未選択</option>
-            <option value="朝ごはん">朝ごはん</option>
-            <option value="昼ごはん">昼ごはん</option>
-            <option value="おやつ">おやつ</option>
-            <option value="夜ごはん">夜ごはん</option>
-          </select>
-        </label>
+          <input id="meal-type" name="mealType" type="hidden" />
+          <div class="meal-type-grid" id="meal-type-buttons" aria-label="食事区分を選択">
+            <button class="meal-type-button" type="button" data-meal-type="朝ごはん" aria-pressed="false">朝ごはん</button>
+            <button class="meal-type-button" type="button" data-meal-type="昼ごはん" aria-pressed="false">昼ごはん</button>
+            <button class="meal-type-button" type="button" data-meal-type="おやつ" aria-pressed="false">おやつ</button>
+            <button class="meal-type-button" type="button" data-meal-type="夜ごはん" aria-pressed="false">夜ごはん</button>
+          </div>
+          <p class="helper-text">もう一度タップすると未選択に戻せます。</p>
+        </div>
 
         <label class="field-group" for="date-time">
           <span class="field-label">日時</span>

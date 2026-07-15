@@ -8,6 +8,7 @@ const form = document.querySelector("#record-form");
 const amountGramInput = document.querySelector("#amount-gram");
 const spoonCountInput = document.querySelector("#spoon-count");
 const mealTypeInput = document.querySelector("#meal-type");
+const mealTypeButtons = document.querySelectorAll(".meal-type-button");
 const dateTimeInput = document.querySelector("#date-time");
 const memoInput = document.querySelector("#memo");
 const statusMessage = document.querySelector("#status-message");
@@ -15,6 +16,7 @@ const submitButton = document.querySelector("#submit-button");
 
 let foods = [...DEFAULT_FOODS];
 let selectedFood = "";
+let selectedMealType = "";
 let messageTimer;
 
 function formatDateTimeLocal(date = new Date()) {
@@ -33,6 +35,10 @@ function showMessage(message, type = "info", autoHide = false) {
       statusMessage.className = "status-message";
     }, 4000);
   }
+}
+
+function normalizeFoods(foodList) {
+  return [...new Set(foodList.map((food) => String(food).trim()).filter(Boolean))];
 }
 
 function renderFoods() {
@@ -60,7 +66,8 @@ async function loadFoods() {
   try {
     const data = await getFoodList();
     if (Array.isArray(data.foods) && data.foods.length > 0) {
-      foods = [...new Set(data.foods.map((food) => String(food).trim()).filter(Boolean))];
+      const apiFoods = normalizeFoods(data.foods);
+      foods = normalizeFoods([...DEFAULT_FOODS, ...apiFoods]);
       if (!foods.includes(selectedFood)) {
         selectedFood = "";
       }
@@ -72,12 +79,29 @@ async function loadFoods() {
   }
 }
 
+function renderMealTypes() {
+  mealTypeInput.value = selectedMealType;
+  mealTypeButtons.forEach((button) => {
+    button.setAttribute("aria-pressed", String(button.dataset.mealType === selectedMealType));
+  });
+}
+
 function resetForm() {
   form.reset();
   selectedFood = "";
+  selectedMealType = "";
   dateTimeInput.value = formatDateTimeLocal();
   renderFoods();
+  renderMealTypes();
 }
+
+mealTypeButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    const mealType = button.dataset.mealType;
+    selectedMealType = selectedMealType === mealType ? "" : mealType;
+    renderMealTypes();
+  });
+});
 
 addFoodButton.addEventListener("click", async () => {
   const foodName = window.prompt("追加する食材名を入力してください");
@@ -137,4 +161,5 @@ form.addEventListener("submit", async (event) => {
 });
 
 dateTimeInput.value = formatDateTimeLocal();
+renderMealTypes();
 loadFoods();

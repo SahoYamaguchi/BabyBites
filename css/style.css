@@ -137,6 +137,7 @@ h1 {
 }
 
 .food-button,
+.meal-type-button,
 .primary-button,
 .secondary-button {
   border: 0;
@@ -146,13 +147,21 @@ h1 {
   font-weight: 700;
 }
 
-.food-button {
+.food-button,
+.meal-type-button {
   border: 2px solid var(--border);
   background: #fffdf9;
   color: var(--text);
 }
 
-.food-button[aria-pressed="true"] {
+.meal-type-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.food-button[aria-pressed="true"],
+.meal-type-button[aria-pressed="true"] {
   border-color: var(--primary-dark);
   background: var(--primary);
   color: #ffffff;
