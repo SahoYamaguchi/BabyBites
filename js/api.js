@@ -1,4 +1,4 @@
-export const GAS_API_URL = "";
+export const GAS_API_URL = "https://script.google.com/macros/s/AKfycbyY32HRJlPQf8Kyx4Uobn8XD7LGyYwKTdGoQL2u9RZEgZY_fvyp-tqPH1nM-VZ_uo1k/exec";
 
 function ensureApiUrl() {
   if (!GAS_API_URL) {
