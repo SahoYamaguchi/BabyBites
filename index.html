@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>BabyBites - 記録入力</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <div>
+        <p class="eyebrow">BabyBites</p>
+        <h1>離乳食を記録</h1>
+      </div>
+      <nav class="nav-links" aria-label="画面切り替え">
+        <a aria-current="page" href="index.html">入力</a>
+        <a href="history.html">履歴</a>
+      </nav>
+    </header>
+
+    <main class="container">
+      <section class="card" aria-labelledby="food-heading">
+        <div class="section-title-row">
+          <h2 id="food-heading">よく使う食材</h2>
+          <button class="secondary-button" id="add-food-button" type="button">＋追加</button>
+        </div>
+        <p class="helper-text">食材を1つ選んでください。</p>
+        <div class="food-grid" id="food-buttons" aria-live="polite"></div>
+      </section>
+
+      <form class="card record-form" id="record-form">
+        <div class="field-group">
+          <span class="field-label">量</span>
+          <div class="toggle-group" role="radiogroup" aria-label="量を選択">
+            <label class="toggle-option">
+              <input type="radio" name="amountLabel" value="少なめ" />
+              <span>少なめ</span>
+            </label>
+            <label class="toggle-option">
+              <input type="radio" name="amountLabel" value="普通" checked />
+              <span>普通</span>
+            </label>
+            <label class="toggle-option">
+              <input type="radio" name="amountLabel" value="多め" />
+              <span>多め</span>
+            </label>
+          </div>
+        </div>
+
+        <label class="field-group" for="amount-gram">
+          <span class="field-label">グラム数 <span class="optional">任意</span></span>
+          <input id="amount-gram" name="amountGram" type="number" inputmode="decimal" min="0" step="0.1" placeholder="例: 15" />
+        </label>
+
+        <label class="field-group" for="spoon-count">
+          <span class="field-label">さじ何杯分 <span class="optional">任意</span></span>
+          <select id="spoon-count" name="spoonCount">
+            <option value="">未選択</option>
+            <option value="0.5">0.5杯</option>
+            <option value="1">1杯</option>
+            <option value="1.5">1.5杯</option>
+            <option value="2">2杯</option>
+            <option value="2.5">2.5杯</option>
+            <option value="3">3杯</option>
+            <option value="3.5">3.5杯</option>
+            <option value="4">4杯</option>
+          </select>
+        </label>
+
+        <div class="field-group">
+          <span class="field-label">食事区分 <span class="optional">任意</span></span>
+          <input id="meal-type" name="mealType" type="hidden" />
+          <div class="meal-type-grid" id="meal-type-buttons" aria-label="食事区分を選択">
+            <button class="meal-type-button emoji-choice-button" type="button" data-meal-type="朝ごはん" aria-pressed="false"><span class="choice-emoji" aria-hidden="true">🌅</span><span class="choice-label">朝ごはん</span></button>
+            <button class="meal-type-button emoji-choice-button" type="button" data-meal-type="昼ごはん" aria-pressed="false"><span class="choice-emoji" aria-hidden="true">☀️</span><span class="choice-label">昼ごはん</span></button>
+            <button class="meal-type-button emoji-choice-button" type="button" data-meal-type="おやつ" aria-pressed="false"><span class="choice-emoji" aria-hidden="true">🍪</span><span class="choice-label">おやつ</span></button>
+            <button class="meal-type-button emoji-choice-button" type="button" data-meal-type="夜ごはん" aria-pressed="false"><span class="choice-emoji" aria-hidden="true">🌙</span><span class="choice-label">夜ごはん</span></button>
+          </div>
+          <p class="helper-text">もう一度タップすると未選択に戻せます。</p>
+        </div>
+
+        <label class="field-group" for="date-time">
+          <span class="field-label">日時</span>
+          <input id="date-time" name="date" type="datetime-local" required />
+        </label>
+
+
+        <div class="field-group">
+          <span class="field-label">食べた反応 <span class="optional">任意</span></span>
+          <input id="reaction" name="reaction" type="hidden" />
+          <div class="reaction-grid" id="reaction-buttons" aria-label="食べた反応を選択">
+            <button class="reaction-button emoji-choice-button" type="button" data-reaction="美味しい" aria-pressed="false"><span class="choice-emoji" aria-hidden="true">😋</span><span class="choice-label">美味しい</span></button>
+            <button class="reaction-button emoji-choice-button" type="button" data-reaction="普通" aria-pressed="false"><span class="choice-emoji" aria-hidden="true">😐</span><span class="choice-label">普通</span></button>
+            <button class="reaction-button emoji-choice-button" type="button" data-reaction="いまいち" aria-pressed="false"><span class="choice-emoji" aria-hidden="true">😖</span><span class="choice-label">いまいち</span></button>
+          </div>
+          <p class="helper-text">もう一度タップすると未選択に戻せます。</p>
+        </div>
+
+        <label class="field-group" for="memo">
+          <span class="field-label">メモ <span class="optional">任意</span></span>
+          <textarea id="memo" name="memo" rows="4" placeholder="食べ方や反応など"></textarea>
+        </label>
+
+        <div class="status-message" id="status-message" role="status" aria-live="polite"></div>
+        <button class="primary-button" id="submit-button" type="submit">記録する</button>
+      </form>
+    </main>
+
+    <script type="module" src="js/record.js"></script>
+  </body>
+</html>
