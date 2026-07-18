@@ -4,6 +4,19 @@ const historyList = document.querySelector("#history-list");
 const statusMessage = document.querySelector("#status-message");
 const reloadButton = document.querySelector("#reload-button");
 
+const MEAL_TYPE_EMOJIS = {
+  "朝ごはん": "🌅",
+  "昼ごはん": "☀️",
+  "おやつ": "🍪",
+  "夜ごはん": "🌙",
+};
+
+const REACTION_EMOJIS = {
+  "美味しい": "😋",
+  "普通": "😐",
+  "いまいち": "😖",
+};
+
 function showMessage(message, type = "info") {
   statusMessage.textContent = message;
   statusMessage.className = `status-message ${type}`;
@@ -53,14 +66,16 @@ function createRecordItem(record) {
     record.amountGram ? `${record.amountGram}g` : "",
     record.spoonCount ? `${record.spoonCount}杯` : "",
   ].filter(Boolean);
+  const mealTypeDisplay = record.mealType ? MEAL_TYPE_EMOJIS[record.mealType] || escapeHtml(record.mealType) : "";
+  const reactionDisplay = record.reaction ? REACTION_EMOJIS[record.reaction] || escapeHtml(record.reaction) : "";
   const memo = record.memo ? `<p class="history-memo">${escapeHtml(record.memo)}</p>` : "";
 
   item.innerHTML = `
     <div class="history-item-main">
-      <time class="history-time" datetime="${record.parsedDate.toISOString()}">${record.mealType ? `[${escapeHtml(record.mealType)}] ` : ""}${formatTime(record.parsedDate)}</time>
+      <time class="history-time" datetime="${record.parsedDate.toISOString()}">${mealTypeDisplay ? `${mealTypeDisplay} ` : ""}${formatTime(record.parsedDate)}</time>
       <div>
         <h3>${record.isFirstTime ? "🎉 " : ""}${escapeHtml(record.foodName || "未入力")}</h3>
-        <p class="history-amount">${escapeHtml(amountParts.join(" / ") || "量未入力")}</p>
+        <p class="history-amount">${escapeHtml(amountParts.join(" / ") || "量未入力")}${reactionDisplay ? ` <span class="history-reaction" aria-label="反応: ${escapeHtml(record.reaction)}">${reactionDisplay}</span>` : ""}</p>
         ${memo}
       </div>
     </div>

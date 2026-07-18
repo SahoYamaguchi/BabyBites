@@ -71,10 +71,10 @@
           <span class="field-label">食事区分 <span class="optional">任意</span></span>
           <input id="meal-type" name="mealType" type="hidden" />
           <div class="meal-type-grid" id="meal-type-buttons" aria-label="食事区分を選択">
-            <button class="meal-type-button" type="button" data-meal-type="朝ごはん" aria-pressed="false">朝ごはん</button>
-            <button class="meal-type-button" type="button" data-meal-type="昼ごはん" aria-pressed="false">昼ごはん</button>
-            <button class="meal-type-button" type="button" data-meal-type="おやつ" aria-pressed="false">おやつ</button>
-            <button class="meal-type-button" type="button" data-meal-type="夜ごはん" aria-pressed="false">夜ごはん</button>
+            <button class="meal-type-button emoji-choice-button" type="button" data-meal-type="朝ごはん" aria-pressed="false"><span class="choice-emoji" aria-hidden="true">🌅</span><span class="choice-label">朝ごはん</span></button>
+            <button class="meal-type-button emoji-choice-button" type="button" data-meal-type="昼ごはん" aria-pressed="false"><span class="choice-emoji" aria-hidden="true">☀️</span><span class="choice-label">昼ごはん</span></button>
+            <button class="meal-type-button emoji-choice-button" type="button" data-meal-type="おやつ" aria-pressed="false"><span class="choice-emoji" aria-hidden="true">🍪</span><span class="choice-label">おやつ</span></button>
+            <button class="meal-type-button emoji-choice-button" type="button" data-meal-type="夜ごはん" aria-pressed="false"><span class="choice-emoji" aria-hidden="true">🌙</span><span class="choice-label">夜ごはん</span></button>
           </div>
           <p class="helper-text">もう一度タップすると未選択に戻せます。</p>
         </div>
@@ -83,6 +83,18 @@
           <span class="field-label">日時</span>
           <input id="date-time" name="date" type="datetime-local" required />
         </label>
+
+
+        <div class="field-group">
+          <span class="field-label">食べた反応 <span class="optional">任意</span></span>
+          <input id="reaction" name="reaction" type="hidden" />
+          <div class="reaction-grid" id="reaction-buttons" aria-label="食べた反応を選択">
+            <button class="reaction-button emoji-choice-button" type="button" data-reaction="美味しい" aria-pressed="false"><span class="choice-emoji" aria-hidden="true">😋</span><span class="choice-label">美味しい</span></button>
+            <button class="reaction-button emoji-choice-button" type="button" data-reaction="普通" aria-pressed="false"><span class="choice-emoji" aria-hidden="true">😐</span><span class="choice-label">普通</span></button>
+            <button class="reaction-button emoji-choice-button" type="button" data-reaction="いまいち" aria-pressed="false"><span class="choice-emoji" aria-hidden="true">😖</span><span class="choice-label">いまいち</span></button>
+          </div>
+          <p class="helper-text">もう一度タップすると未選択に戻せます。</p>
+        </div>
 
         <label class="field-group" for="memo">
           <span class="field-label">メモ <span class="optional">任意</span></span>

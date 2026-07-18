@@ -9,6 +9,8 @@ const amountGramInput = document.querySelector("#amount-gram");
 const spoonCountInput = document.querySelector("#spoon-count");
 const mealTypeInput = document.querySelector("#meal-type");
 const mealTypeButtons = document.querySelectorAll(".meal-type-button");
+const reactionInput = document.querySelector("#reaction");
+const reactionButtons = document.querySelectorAll(".reaction-button");
 const dateTimeInput = document.querySelector("#date-time");
 const memoInput = document.querySelector("#memo");
 const statusMessage = document.querySelector("#status-message");
@@ -17,6 +19,7 @@ const submitButton = document.querySelector("#submit-button");
 let foods = [...DEFAULT_FOODS];
 let selectedFood = "";
 let selectedMealType = "";
+let selectedReaction = "";
 let messageTimer;
 
 function formatDateTimeLocal(date = new Date()) {
@@ -86,13 +89,22 @@ function renderMealTypes() {
   });
 }
 
+function renderReactions() {
+  reactionInput.value = selectedReaction;
+  reactionButtons.forEach((button) => {
+    button.setAttribute("aria-pressed", String(button.dataset.reaction === selectedReaction));
+  });
+}
+
 function resetForm() {
   form.reset();
   selectedFood = "";
   selectedMealType = "";
+  selectedReaction = "";
   dateTimeInput.value = formatDateTimeLocal();
   renderFoods();
   renderMealTypes();
+  renderReactions();
 }
 
 mealTypeButtons.forEach((button) => {
@@ -100,6 +112,14 @@ mealTypeButtons.forEach((button) => {
     const mealType = button.dataset.mealType;
     selectedMealType = selectedMealType === mealType ? "" : mealType;
     renderMealTypes();
+  });
+});
+
+reactionButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    const reaction = button.dataset.reaction;
+    selectedReaction = selectedReaction === reaction ? "" : reaction;
+    renderReactions();
   });
 });
 
@@ -147,6 +167,7 @@ form.addEventListener("submit", async (event) => {
       amountGram,
       spoonCount: spoonCountInput.value,
       mealType: mealTypeInput.value,
+      reaction: reactionInput.value,
       memo: memoInput.value.trim(),
     });
 
@@ -162,4 +183,5 @@ form.addEventListener("submit", async (event) => {
 
 dateTimeInput.value = formatDateTimeLocal();
 renderMealTypes();
+renderReactions();
 loadFoods();

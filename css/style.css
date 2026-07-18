@@ -138,6 +138,7 @@ h1 {
 
 .food-button,
 .meal-type-button,
+.reaction-button,
 .primary-button,
 .secondary-button {
   border: 0;
@@ -148,20 +149,46 @@ h1 {
 }
 
 .food-button,
-.meal-type-button {
+.meal-type-button,
+.reaction-button {
   border: 2px solid var(--border);
   background: #fffdf9;
   color: var(--text);
 }
 
-.meal-type-grid {
+.meal-type-grid,
+.reaction-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
 }
 
+.meal-type-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.reaction-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.emoji-choice-button {
+  display: grid;
+  gap: 2px;
+  place-items: center;
+}
+
+.choice-emoji {
+  font-size: 1.6rem;
+  line-height: 1;
+}
+
+.choice-label {
+  font-size: 0.78rem;
+  line-height: 1.2;
+}
+
 .food-button[aria-pressed="true"],
-.meal-type-button[aria-pressed="true"] {
+.meal-type-button[aria-pressed="true"],
+.reaction-button[aria-pressed="true"] {
   border-color: var(--primary-dark);
   background: var(--primary);
   color: #ffffff;
@@ -304,6 +331,12 @@ textarea {
   color: var(--muted);
 }
 
+.history-reaction {
+  display: inline-block;
+  margin-left: 4px;
+  font-size: 1.1rem;
+}
+
 .history-memo {
   margin-top: 4px;
   white-space: pre-wrap;
@@ -316,6 +349,10 @@ textarea {
 }
 
 @media (max-width: 420px) {
+  .meal-type-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .app-header {
     align-items: flex-start;
     flex-direction: column;

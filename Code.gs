@@ -4,7 +4,7 @@ const SHEET_NAMES = {
 };
 
 const HEADERS = {
-  records: ['日時', '食材名', '量ラベル', 'グラム数', 'さじ杯数', '食事区分', 'メモ', '初回'],
+  records: ['日時', '食材名', '量ラベル', 'グラム数', 'さじ杯数', '食事区分', '反応', 'メモ', '初回'],
   foods: ['食材名'],
 };
 
@@ -48,6 +48,7 @@ function addRecord(params) {
     params.amountGram || '',
     params.spoonCount || '',
     params.mealType || '',
+    params.reaction || '',
     params.memo || '',
     isFirstTime,
   ]);
@@ -69,8 +70,9 @@ function getRecords() {
     amountGram: row[3] || '',
     spoonCount: row[4] || '',
     mealType: row[5] || '',
-    memo: row[6] || '',
-    isFirstTime: row[7] === true || row[7] === 'TRUE' || row[7] === 'true',
+    reaction: row[6] || '',
+    memo: row[7] || '',
+    isFirstTime: row[8] === true || row[8] === 'TRUE' || row[8] === 'true',
   })).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   return { success: true, records };
@@ -134,9 +136,15 @@ function getOrCreateSheet(sheetName, headers) {
 }
 
 function ensureHeaders(sheet, headers) {
-  const currentHeaders = sheet.getLastColumn() > 0
+  let currentHeaders = sheet.getLastColumn() > 0
     ? sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0]
     : [];
+
+  if (headers.includes('反応') && !currentHeaders.includes('反応') && currentHeaders[6] === 'メモ') {
+    sheet.insertColumnBefore(7);
+    sheet.getRange(1, 7).setValue('反応');
+    currentHeaders = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  }
 
   headers.forEach((header, index) => {
     if (currentHeaders[index] !== header) {
