@@ -142,7 +142,7 @@ function getFoodInfoRows(sheetName, headers, foodName, contentHeaderCandidates) 
     const rowFoodName = String(row[foodNameIndex] || '').trim();
     const content = String(row[contentIndex] || '').trim();
 
-    if (rowFoodName !== foodName || !content) {
+    if (normalizeFoodName(rowFoodName) !== normalizeFoodName(foodName) || !content) {
       return items;
     }
 
@@ -237,4 +237,34 @@ function ensureHeaders(sheet, headers) {
 
 function jsonResponse(payload) {
   return ContentService.createTextOutput(JSON.stringify(payload)).setMimeType(ContentService.MimeType.JSON);
+}
+
+function normalizeFoodName(name) {
+  return String(name || '')
+    .trim()
+    .replace(/[\s　]+/g, '')        // 空白除去
+    .replace(/[()（）].*$/, '');    // 末尾のカッコ書き除去(例:「しらす(生)」→「しらす」)
+}
+
+// 表記揺れ検知
+function findUnmatchedFoodNames() {
+  const masterNames = new Set(getFoodNames(getOrCreateSheet(SHEET_NAMES.foods, HEADERS.foods)));
+  const sheets = [SHEET_NAMES.cautions, SHEET_NAMES.cookingMethods];
+  const unmatched = [];
+
+  sheets.forEach((sheetName) => {
+    const sheet = getOrCreateInfoSheet(sheetName, HEADERS[sheetName]);
+    const values = sheet.getDataRange().getValues();
+    const headerRow = values[0].map((h) => String(h || '').trim());
+    const foodNameIndex = findHeaderIndex(headerRow, ['食材名', '食材', '材料']);
+
+    values.slice(1).forEach((row) => {
+      const name = String(row[foodNameIndex] || '').trim();
+      if (name && !masterNames.has(name)) {
+        unmatched.push({ sheet: sheetName, name });
+      }
+    });
+  });
+
+  return unmatched;
 }
