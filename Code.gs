@@ -159,7 +159,7 @@ function findHeaderIndex(headers, candidates) {
     if (foundIndex !== -1) {
       return foundIndex;
     }
-    return headers.indexOf(candidate);
+    return headers.findIndex((header) => header.includes(candidate));
   }, -1);
 }
 
