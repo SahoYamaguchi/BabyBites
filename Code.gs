@@ -34,6 +34,8 @@ function handleRequest(params) {
         return jsonResponse(addFood(params));
       case 'getFoodInfo':
         return jsonResponse(getFoodInfo(params));
+      case 'getAllFoodNames':
+        return jsonResponse(getAllFoodNames());
       default:
         return jsonResponse({ success: false, message: 'Unknown action' });
     }
@@ -244,6 +246,40 @@ function normalizeFoodName(name) {
     .trim()
     .replace(/[\s　]+/g, '')        // 空白除去
     .replace(/[()（）].*$/, '');    // 末尾のカッコ書き除去(例:「しらす(生)」→「しらす」)
+}
+
+function getAllFoodNames() {
+  const sources = [
+    { sheetName: SHEET_NAMES.cautions, headers: HEADERS.cautions },
+    { sheetName: SHEET_NAMES.cookingMethods, headers: HEADERS.cookingMethods },
+  ];
+
+  const nameSet = new Set();
+
+  sources.forEach(({ sheetName, headers }) => {
+    const sheet = getOrCreateInfoSheet(sheetName, headers);
+    const values = sheet.getDataRange().getValues();
+
+    if (values.length < 2) {
+      return;
+    }
+
+    const headerRow = values[0].map((header) => String(header || '').trim());
+    const foodNameIndex = findHeaderIndex(headerRow, ['食材名', '食材', '材料']);
+
+    if (foodNameIndex === -1) {
+      return;
+    }
+
+    values.slice(1).forEach((row) => {
+      const name = String(row[foodNameIndex] || '').trim();
+      if (name) {
+        nameSet.add(name);
+      }
+    });
+  });
+
+  return { success: true, foods: [...nameSet].sort((a, b) => a.localeCompare(b, 'ja')) };
 }
 
 // 表記揺れ検知
