@@ -1,4 +1,4 @@
-import { getFoodInfo, getFoodList } from "./api.js";
+import { getAllFoodNames, getFoodInfo } from "./api.js";
 
 const foodButtons = document.querySelector("#food-buttons");
 const foodInfoPanel = document.querySelector("#food-info-panel");
@@ -60,7 +60,7 @@ async function loadFoods() {
   foodButtons.innerHTML = `<p class="food-info-loading">食材リストを読み込んでいます...</p>`;
 
   try {
-    const data = await getFoodList();
+    const data = await getAllFoodNames();
     allFoods = normalizeFoods(Array.isArray(data.foods) ? data.foods : []);
     renderFoods();
   } catch (error) {
