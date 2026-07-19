@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>BabyBites - 食材図鑑</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <div>
+        <p class="eyebrow">BabyBites</p>
+        <h1>食材図鑑</h1>
+      </div>
+      <nav class="nav-links" aria-label="画面切り替え">
+        <a href="index.html">入力</a>
+        <a href="history.html">履歴</a>
+        <a aria-current="page" href="foods.html">図鑑</a>
+      </nav>
+    </header>
+
+    <main class="container">
+      <section class="card" aria-labelledby="foods-heading">
+        <div class="section-title-row">
+          <h2 id="foods-heading">食材一覧</h2>
+        </div>
+        <p class="helper-text">食材を選ぶと、注意点・調理法を確認できます。</p>
+        <label class="field-group" for="food-search">
+          <span class="field-label">食材を検索</span>
+          <input id="food-search" type="search" placeholder="例: しらす" autocomplete="off" />
+        </label>
+        <div class="food-grid" id="food-buttons" aria-live="polite"></div>
+        <div class="food-info-panel" id="food-info-panel" aria-live="polite" hidden></div>
+      </section>
+    </main>
+
+    <script type="module" src="js/foods.js"></script>
+  </body>
+</html>
