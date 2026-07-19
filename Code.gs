@@ -265,7 +265,7 @@ function getAllFoodNames() {
     }
 
     const headerRow = values[0].map((header) => String(header || '').trim());
-    const foodNameIndex = findHeaderIndex(headerRow, ['食材名', '食材', '材料']);
+    const foodNameIndex = findHeaderIndex(headerRow, ['食材名マスタ', '食材', '材料']);
 
     if (foodNameIndex === -1) {
       return;
