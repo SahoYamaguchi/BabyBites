@@ -1,11 +1,15 @@
 const SHEET_NAMES = {
   records: '記録',
   foods: '食材',
+  cautions: '注意点',
+  cookingMethods: '調理法',
 };
 
 const HEADERS = {
   records: ['日時', '食材名', '量ラベル', 'グラム数', 'さじ杯数', '食事区分', '反応', 'メモ', '初回'],
   foods: ['食材名'],
+  cautions: ['食材名', '注意点', '参照元'],
+  cookingMethods: ['食材名', '調理法', '参照元'],
 };
 
 function doGet(e) {
@@ -28,6 +32,8 @@ function handleRequest(params) {
         return jsonResponse(getFoodList());
       case 'addFood':
         return jsonResponse(addFood(params));
+      case 'getFoodInfo':
+        return jsonResponse(getFoodInfo(params));
       default:
         return jsonResponse({ success: false, message: 'Unknown action' });
     }
@@ -99,6 +105,64 @@ function getFoodList() {
   return { success: true, foods: getFoodNames(sheet) };
 }
 
+
+function getFoodInfo(params) {
+  const foodName = String(params.foodName || '').trim();
+
+  if (!foodName) {
+    return { success: false, message: 'foodName is required' };
+  }
+
+  return {
+    success: true,
+    foodName,
+    cautions: getFoodInfoRows(SHEET_NAMES.cautions, HEADERS.cautions, foodName, ['注意点', '内容', '要約', 'メモ']),
+    cookingMethods: getFoodInfoRows(SHEET_NAMES.cookingMethods, HEADERS.cookingMethods, foodName, ['調理法', '内容', '要約', 'メモ']),
+  };
+}
+
+function getFoodInfoRows(sheetName, headers, foodName, contentHeaderCandidates) {
+  const sheet = getOrCreateInfoSheet(sheetName, headers);
+  const values = sheet.getDataRange().getValues();
+
+  if (values.length < 2) {
+    return [];
+  }
+
+  const headerRow = values[0].map((header) => String(header || '').trim());
+  const foodNameIndex = findHeaderIndex(headerRow, ['食材名', '食材', '材料']);
+  const contentIndex = findHeaderIndex(headerRow, contentHeaderCandidates);
+  const sourceIndex = findHeaderIndex(headerRow, ['参照元', '出典', '日目', '食目']);
+
+  if (foodNameIndex === -1 || contentIndex === -1) {
+    return [];
+  }
+
+  return values.slice(1).reduce((items, row) => {
+    const rowFoodName = String(row[foodNameIndex] || '').trim();
+    const content = String(row[contentIndex] || '').trim();
+
+    if (rowFoodName !== foodName || !content) {
+      return items;
+    }
+
+    items.push({
+      text: content,
+      source: sourceIndex === -1 ? '' : String(row[sourceIndex] || '').trim(),
+    });
+    return items;
+  }, []);
+}
+
+function findHeaderIndex(headers, candidates) {
+  return candidates.reduce((foundIndex, candidate) => {
+    if (foundIndex !== -1) {
+      return foundIndex;
+    }
+    return headers.indexOf(candidate);
+  }, -1);
+}
+
 function hasRecordedFood(foodName) {
   if (!foodName) {
     return false;
@@ -121,6 +185,24 @@ function getDataRows(sheet) {
   }
 
   return sheet.getRange(2, 1, lastRow - 1, lastColumn).getValues();
+}
+
+
+function getOrCreateInfoSheet(sheetName, headers) {
+  const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = spreadsheet.getSheetByName(sheetName);
+
+  if (!sheet) {
+    sheet = spreadsheet.insertSheet(sheetName);
+    ensureHeaders(sheet, headers);
+    return sheet;
+  }
+
+  if (sheet.getLastRow() === 0 || sheet.getLastColumn() === 0) {
+    ensureHeaders(sheet, headers);
+  }
+
+  return sheet;
 }
 
 function getOrCreateSheet(sheetName, headers) {

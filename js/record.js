@@ -1,8 +1,9 @@
-import { addFood, addRecord, getFoodList } from "./api.js";
+import { addFood, addRecord, getFoodInfo, getFoodList } from "./api.js";
 
 const DEFAULT_FOODS = ["10倍がゆ", "にんじん", "かぼちゃ", "りんご", "しらす", "豆腐"];
 
 const foodButtons = document.querySelector("#food-buttons");
+const foodInfoPanel = document.querySelector("#food-info-panel");
 const addFoodButton = document.querySelector("#add-food-button");
 const form = document.querySelector("#record-form");
 const amountGramInput = document.querySelector("#amount-gram");
@@ -21,6 +22,7 @@ let selectedFood = "";
 let selectedMealType = "";
 let selectedReaction = "";
 let messageTimer;
+let foodInfoRequestId = 0;
 
 function formatDateTimeLocal(date = new Date()) {
   const offsetDate = new Date(date.getTime() - date.getTimezoneOffset() * 60_000);
@@ -44,6 +46,13 @@ function normalizeFoods(foodList) {
   return [...new Set(foodList.map((food) => String(food).trim()).filter(Boolean))];
 }
 
+function escapeHtml(value) {
+  return String(value).replace(/[&<>'"]/g, (character) => {
+    const entities = { "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" };
+    return entities[character];
+  });
+}
+
 function renderFoods() {
   foodButtons.innerHTML = "";
 
@@ -57,6 +66,7 @@ function renderFoods() {
     button.addEventListener("click", () => {
       selectedFood = food;
       renderFoods();
+      loadFoodInfo(food);
     });
 
     foodButtons.append(button);
@@ -82,6 +92,72 @@ async function loadFoods() {
   }
 }
 
+function hideFoodInfo() {
+  foodInfoRequestId += 1;
+  foodInfoPanel.hidden = true;
+  foodInfoPanel.innerHTML = "";
+}
+
+function renderFoodInfoList(title, items) {
+  if (!Array.isArray(items) || items.length === 0) {
+    return `
+      <section class="food-info-section">
+        <h4>${title}</h4>
+        <p class="food-info-empty">登録された情報はまだありません。</p>
+      </section>
+    `;
+  }
+
+  const listItems = items.map((item) => {
+    const source = item.source ? ` <span class="food-info-source">${escapeHtml(item.source)}</span>` : "";
+    return `<li>${escapeHtml(item.text)}${source}</li>`;
+  }).join("");
+
+  return `
+    <section class="food-info-section">
+      <h4>${title}</h4>
+      <ul>${listItems}</ul>
+    </section>
+  `;
+}
+
+async function loadFoodInfo(foodName) {
+  const requestId = foodInfoRequestId + 1;
+  foodInfoRequestId = requestId;
+  foodInfoPanel.hidden = false;
+  foodInfoPanel.innerHTML = `<p class="food-info-loading">${escapeHtml(foodName)} の情報を読み込んでいます...</p>`;
+
+  try {
+    const data = await getFoodInfo(foodName);
+
+    if (requestId !== foodInfoRequestId || selectedFood !== foodName) {
+      return;
+    }
+
+    foodInfoPanel.innerHTML = `
+      <div class="food-info-heading">
+        <h3>${escapeHtml(foodName)} のメモ</h3>
+        <p>注意点が複数ある場合は箇条書きで表示します。</p>
+      </div>
+      ${renderFoodInfoList("注意点", data.cautions)}
+      ${renderFoodInfoList("調理法", data.cookingMethods)}
+    `;
+  } catch (error) {
+    console.warn(error);
+
+    if (requestId !== foodInfoRequestId || selectedFood !== foodName) {
+      return;
+    }
+
+    foodInfoPanel.innerHTML = `
+      <div class="food-info-heading">
+        <h3>${escapeHtml(foodName)} のメモ</h3>
+        <p class="food-info-empty">注意点・調理法を取得できませんでした。</p>
+      </div>
+    `;
+  }
+}
+
 function renderMealTypes() {
   mealTypeInput.value = selectedMealType;
   mealTypeButtons.forEach((button) => {
@@ -103,6 +179,7 @@ function resetForm() {
   selectedReaction = "";
   dateTimeInput.value = formatDateTimeLocal();
   renderFoods();
+  hideFoodInfo();
   renderMealTypes();
   renderReactions();
 }
@@ -137,6 +214,7 @@ addFoodButton.addEventListener("click", async () => {
     foods = [...new Set([...foods, trimmedFoodName])];
     selectedFood = trimmedFoodName;
     renderFoods();
+    loadFoodInfo(trimmedFoodName);
     showMessage("食材を追加しました。", "success", true);
   } catch (error) {
     console.error(error);

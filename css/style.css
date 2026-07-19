@@ -370,3 +370,60 @@ textarea {
     padding: 16px;
   }
 }
+
+.food-info-panel {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+  border: 2px solid var(--primary-soft);
+  border-radius: 18px;
+  padding: 14px;
+  background: #fffaf3;
+}
+
+.food-info-panel[hidden] {
+  display: none;
+}
+
+.food-info-heading h3,
+.food-info-section h4,
+.food-info-loading,
+.food-info-empty {
+  margin-bottom: 0;
+}
+
+.food-info-heading h3 {
+  font-size: 1.05rem;
+}
+
+.food-info-heading p,
+.food-info-empty,
+.food-info-source {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.food-info-section {
+  display: grid;
+  gap: 6px;
+}
+
+.food-info-section h4 {
+  color: var(--primary-dark);
+  font-size: 0.98rem;
+}
+
+.food-info-section ul {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding-left: 1.2rem;
+}
+
+.food-info-source::before {
+  content: "（";
+}
+
+.food-info-source::after {
+  content: "）";
+}
