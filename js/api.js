@@ -53,6 +53,10 @@ export function getFoodInfo(foodName) {
   return requestJson(buildApiUrl("getFoodInfo", { foodName }));
 }
 
+export function getAllFoodNames() {
+  return requestJson(buildApiUrl("getAllFoodNames"));
+}
+
 export function addRecord({ date, foodName, amountLabel, amountGram, spoonCount, mealType, reaction, memo }) {
   return requestJson(buildApiUrl("addRecord", {
     date,
