@@ -1,17 +1,16 @@
-import { getAllFoodNames, getFoodInfo } from "./api.js";
+import { getFoodInfo, getFoodMaster } from "./api.js";
+
+const CATEGORY_ORDER = ["炭水化物", "野菜", "果物", "タンパク質", "乳製品", "その他"];
 
 const foodButtons = document.querySelector("#food-buttons");
 const foodInfoPanel = document.querySelector("#food-info-panel");
 const foodSearchInput = document.querySelector("#food-search");
 
-let allFoods = [];
+let allFoods = []; // [{ name, category }]
 let selectedFood = "";
 let foodInfoRequestId = 0;
 let searchTerm = "";
-
-function normalizeFoods(foodList) {
-  return [...new Set(foodList.map((food) => String(food).trim()).filter(Boolean))];
-}
+const openCategories = new Set();
 
 function escapeHtml(value) {
   return String(value).replace(/[&<>'"]/g, (character) => {
@@ -20,11 +19,46 @@ function escapeHtml(value) {
   });
 }
 
+function normalizeFoodMaster(foods) {
+  const seen = new Set();
+  return foods.reduce((items, food) => {
+    const name = String(food?.name || "").trim();
+    if (!name || seen.has(name)) {
+      return items;
+    }
+    seen.add(name);
+    const category = String(food?.category || "").trim() || "その他";
+    items.push({ name, category });
+    return items;
+  }, []);
+}
+
+function groupByCategory(foods) {
+  const groups = new Map();
+
+  foods.forEach((food) => {
+    if (!groups.has(food.category)) {
+      groups.set(food.category, []);
+    }
+    groups.get(food.category).push(food);
+  });
+
+  const orderedCategories = [
+    ...CATEGORY_ORDER.filter((category) => groups.has(category)),
+    ...[...groups.keys()].filter((category) => !CATEGORY_ORDER.includes(category)),
+  ];
+
+  return orderedCategories.map((category) => ({
+    category,
+    foods: groups.get(category),
+  }));
+}
+
 function getFilteredFoods() {
   if (!searchTerm) {
     return allFoods;
   }
-  return allFoods.filter((food) => food.includes(searchTerm));
+  return allFoods.filter((food) => food.name.includes(searchTerm));
 }
 
 function renderFoods() {
@@ -39,20 +73,48 @@ function renderFoods() {
     return;
   }
 
-  filteredFoods.forEach((food) => {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "food-button";
-    button.textContent = food;
-    button.setAttribute("aria-pressed", String(food === selectedFood));
+  const groupedFoods = groupByCategory(filteredFoods);
 
-    button.addEventListener("click", () => {
-      selectedFood = food;
-      renderFoods();
-      loadFoodInfo(food);
+  groupedFoods.forEach(({ category, foods }) => {
+    const details = document.createElement("details");
+    details.className = "food-category";
+    // 検索中はヒットしたカテゴリを自動で開く。それ以外は開閉状態を記憶する。
+    details.open = searchTerm ? true : openCategories.has(category);
+
+    details.addEventListener("toggle", () => {
+      if (details.open) {
+        openCategories.add(category);
+      } else {
+        openCategories.delete(category);
+      }
     });
 
-    foodButtons.append(button);
+    const summary = document.createElement("summary");
+    summary.className = "food-category-summary";
+    summary.textContent = `${category}(${foods.length})`;
+    details.append(summary);
+
+    const grid = document.createElement("div");
+    grid.className = "food-grid";
+
+    foods.forEach((food) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "food-button";
+      button.textContent = food.name;
+      button.setAttribute("aria-pressed", String(food.name === selectedFood));
+
+      button.addEventListener("click", () => {
+        selectedFood = food.name;
+        renderFoods();
+        loadFoodInfo(food.name);
+      });
+
+      grid.append(button);
+    });
+
+    details.append(grid);
+    foodButtons.append(details);
   });
 }
 
@@ -60,8 +122,8 @@ async function loadFoods() {
   foodButtons.innerHTML = `<p class="food-info-loading">食材リストを読み込んでいます...</p>`;
 
   try {
-    const data = await getAllFoodNames();
-    allFoods = normalizeFoods(Array.isArray(data.foods) ? data.foods : []);
+    const data = await getFoodMaster();
+    allFoods = normalizeFoodMaster(Array.isArray(data.foods) ? data.foods : []);
     renderFoods();
   } catch (error) {
     console.warn(error);
