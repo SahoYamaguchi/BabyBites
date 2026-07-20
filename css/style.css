@@ -427,3 +427,37 @@ textarea {
 .food-info-source::after {
   content: "）";
 }
+
+
+.food-category {
+  margin-bottom: 12px;
+  border: 1px solid var(--border-color, #e0e0e0);
+  border-radius: 8px;
+  padding: 4px 12px;
+}
+
+.food-category-summary {
+  cursor: pointer;
+  padding: 10px 4px;
+  font-weight: 600;
+  list-style: none;
+}
+
+.food-category-summary::-webkit-details-marker {
+  display: none;
+}
+
+.food-category-summary::before {
+  content: "▶";
+  display: inline-block;
+  margin-right: 8px;
+  font-size: 0.75em;
+  transition: transform 0.15s ease;
+}
+
+.food-category[open] > .food-category-summary::before {
+  transform: rotate(90deg);
+}
+.food-category .food-grid {
+  padding: 4px 0 12px;
+}
