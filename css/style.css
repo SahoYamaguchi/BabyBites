@@ -472,3 +472,9 @@ textarea {
   width: 100%;
   text-align: left;
 }
+
+.food-category-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
