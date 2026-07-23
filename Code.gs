@@ -3,6 +3,9 @@ const SHEET_NAMES = {
   foods: '食材',
   cautions: '注意点',
   cookingMethods: '調理法',
+  masterFoods: '食材マスタ',
+  settings: '設定',
+  instaRecords: 'インスタ記録',
 };
 
 const HEADERS = {
@@ -10,6 +13,9 @@ const HEADERS = {
   foods: ['食材名'],
   cautions: ['食材名', '注意点', '参照元'],
   cookingMethods: ['食材名', '調理法', '参照元'],
+  masterFoods: ['食材マスタ','登録日','カテゴリ'],
+  settings: ['項目', '値'],
+  instaRecords: ['日目', '食目', '材料', '要約'],
 };
 
 function doGet(e) {
@@ -34,8 +40,14 @@ function handleRequest(params) {
         return jsonResponse(addFood(params));
       case 'getFoodInfo':
         return jsonResponse(getFoodInfo(params));
-      case 'getAllFoodNames':
-        return jsonResponse(getAllFoodNames());
+      case 'getFoodMaster':
+        return jsonResponse(getFoodMaster());
+      case 'getSettings':
+        return jsonResponse(getSettings());
+      case 'saveSetting':
+        return jsonResponse(saveSetting(params));
+      case 'getInstaRecords':
+        return jsonResponse(getInstaRecords(params));
       default:
         return jsonResponse({ success: false, message: 'Unknown action' });
     }
@@ -248,38 +260,33 @@ function normalizeFoodName(name) {
     .replace(/[()（）].*$/, '');    // 末尾のカッコ書き除去(例:「しらす(生)」→「しらす」)
 }
 
-function getAllFoodNames() {
-  const sources = [
-    { sheetName: SHEET_NAMES.cautions, headers: HEADERS.cautions },
-    { sheetName: SHEET_NAMES.cookingMethods, headers: HEADERS.cookingMethods },
-  ];
+function getFoodMaster() {
+  const sheet = getOrCreateSheet(SHEET_NAMES.masterFoods, HEADERS.masterFoods);
+  const values = sheet.getDataRange().getValues();
 
-  const nameSet = new Set();
+  if (values.length < 2) {
+    return { success: true, foods: [] };
+  }
 
-  sources.forEach(({ sheetName, headers }) => {
-    const sheet = getOrCreateInfoSheet(sheetName, headers);
-    const values = sheet.getDataRange().getValues();
+  const headerRow = values[0].map((header) => String(header || '').trim());
+  const nameIndex = findHeaderIndex(headerRow, ['食材名マスタ', '食材名', '食材']);
+  const categoryIndex = findHeaderIndex(headerRow, ['カテゴリ']);
 
-    if (values.length < 2) {
-      return;
+  if (nameIndex === -1) {
+    return { success: true, foods: [] };
+  }
+
+  const foods = values.slice(1).reduce((items, row) => {
+    const name = String(row[nameIndex] || '').trim();
+    if (!name) {
+      return items;
     }
+    const category = categoryIndex === -1 ? 'その他' : (String(row[categoryIndex] || '').trim() || 'その他');
+    items.push({ name, category });
+    return items;
+  }, []);
 
-    const headerRow = values[0].map((header) => String(header || '').trim());
-    const foodNameIndex = findHeaderIndex(headerRow, ['食材名マスタ', '食材', '材料']);
-
-    if (foodNameIndex === -1) {
-      return;
-    }
-
-    values.slice(1).forEach((row) => {
-      const name = String(row[foodNameIndex] || '').trim();
-      if (name) {
-        nameSet.add(name);
-      }
-    });
-  });
-
-  return { success: true, foods: [...nameSet].sort((a, b) => a.localeCompare(b, 'ja')) };
+  return { success: true, foods };
 }
 
 // 表記揺れ検知
@@ -303,4 +310,101 @@ function findUnmatchedFoodNames() {
   });
 
   return unmatched;
+}
+
+function getSettings() {
+  const sheet = getOrCreateSheet(SHEET_NAMES.settings, HEADERS.settings);
+  const values = sheet.getDataRange().getValues();
+  const settings = {};
+
+  if (values.length >= 2) {
+    const headerRow = values[0].map((h) => String(h || '').trim());
+    const keyIndex = findHeaderIndex(headerRow, ['項目']);
+    const valueIndex = findHeaderIndex(headerRow, ['値']);
+
+    if (keyIndex !== -1 && valueIndex !== -1) {
+      values.slice(1).forEach((row) => {
+        const key = String(row[keyIndex] || '').trim();
+        if (key) {
+          settings[key] = row[valueIndex] instanceof Date
+            ? Utilities.formatDate(row[valueIndex], Session.getScriptTimeZone(), 'yyyy-MM-dd')
+            : String(row[valueIndex] || '').trim();
+        }
+      });
+    }
+  }
+
+  return { success: true, settings };
+}
+
+function saveSetting(params) {
+  const key = String(params.key || '').trim();
+  const value = String(params.value || '').trim();
+
+  if (!key) {
+    return { success: false, message: 'key is required' };
+  }
+
+  const sheet = getOrCreateSheet(SHEET_NAMES.settings, HEADERS.settings);
+  const values = sheet.getDataRange().getValues();
+  const headerRow = values.length > 0 ? values[0].map((h) => String(h || '').trim()) : HEADERS.settings;
+  const keyIndex = findHeaderIndex(headerRow, ['項目']);
+  const valueIndex = findHeaderIndex(headerRow, ['値']);
+
+  for (let i = 1; i < values.length; i += 1) {
+    if (String(values[i][keyIndex] || '').trim() === key) {
+      sheet.getRange(i + 1, valueIndex + 1).setValue(value);
+      return { success: true };
+    }
+  }
+
+  sheet.appendRow([key, value]);
+  return { success: true };
+}
+
+function getInstaRecords(params) {
+  const week = params.week ? Number(params.week) : null;
+  const keyword = String(params.keyword || '').trim();
+
+  const sheet = getOrCreateSheet(SHEET_NAMES.instaRecords, HEADERS.instaRecords);
+  const values = sheet.getDataRange().getValues();
+
+  if (values.length < 2) {
+    return { success: true, records: [], availableWeeks: [] };
+  }
+
+  const headerRow = values[0].map((h) => String(h || '').trim());
+  const dayIndex = findHeaderIndex(headerRow, ['日目']);
+  const mealIndex = findHeaderIndex(headerRow, ['食目']);
+  const ingredientIndex = findHeaderIndex(headerRow, ['材料']);
+  const summaryIndex = findHeaderIndex(headerRow, ['要約']);
+
+  const allRecords = values.slice(1).reduce((items, row) => {
+    const day = Number(row[dayIndex]);
+    if (!day) {
+      return items;
+    }
+    items.push({
+      day,
+      week: Math.ceil(day / 7),
+      meal: mealIndex === -1 ? '' : String(row[mealIndex] || '').trim(),
+      ingredient: ingredientIndex === -1 ? '' : String(row[ingredientIndex] || '').trim(),
+      summary: summaryIndex === -1 ? '' : String(row[summaryIndex] || '').trim(),
+    });
+    return items;
+  }, []);
+
+  const availableWeeks = [...new Set(allRecords.map((r) => r.week))].sort((a, b) => a - b);
+
+  const filtered = allRecords.filter((record) => {
+    const matchesWeek = week ? record.week === week : true;
+    const matchesKeyword = keyword
+      ? record.ingredient.includes(keyword) || record.summary.includes(keyword)
+      : true;
+    return matchesWeek && matchesKeyword;
+  });
+
+  filtered.sort((a, b) => a.day - b.day || a.meal.localeCompare(b.meal, 'ja'));
+
+  return { success: true, records: filtered, availableWeeks };
 }
