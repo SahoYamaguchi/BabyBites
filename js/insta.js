@@ -116,6 +116,17 @@ function renderRecords(records) {
   `).join("");
 }
 
+function sortRecordsForSearch(records) {
+  return [...records].sort((a, b) => {
+    const aIsCurrentWeek = a.week === selectedWeek ? 0 : 1;
+    const bIsCurrentWeek = b.week === selectedWeek ? 0 : 1;
+    if (aIsCurrentWeek !== bIsCurrentWeek) {
+      return aIsCurrentWeek - bIsCurrentWeek;
+    }
+    return a.day - b.day;
+  });
+}
+
 async function loadRecords() {
   const currentRequestId = requestId + 1;
   requestId = currentRequestId;
@@ -131,7 +142,8 @@ async function loadRecords() {
       return;
     }
 
-    renderRecords(data.records);
+    const records = searchTerm ? sortRecordsForSearch(data.records || []) : data.records;
+    renderRecords(records);
   } catch (error) {
     console.warn(error);
     if (currentRequestId !== requestId) {
