@@ -69,3 +69,15 @@ export function addRecord({ date, foodName, amountLabel, amountGram, spoonCount,
     memo,
   }));
 }
+
+export function getSettings() {
+  return requestJson(buildApiUrl("getSettings"));
+}
+
+export function saveSetting(key, value) {
+  return requestJson(buildApiUrl("saveSetting", { key, value }));
+}
+
+export function getInstaRecords({ week, keyword } = {}) {
+  return requestJson(buildApiUrl("getInstaRecords", { week, keyword }));
+}
