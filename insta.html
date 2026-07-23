@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>BabyBites - インスタ記録</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <div>
+        <p class="eyebrow">BabyBites</p>
+        <h1>インスタ記録</h1>
+      </div>
+      <nav class="nav-links" aria-label="画面切り替え">
+        <a href="index.html">入力</a>
+        <a href="history.html">履歴</a>
+        <a href="foods.html">図鑑</a>
+        <a aria-current="page" href="insta.html">投稿</a>
+      </nav>
+    </header>
+
+    <main class="container">
+      <section class="card" id="start-date-card" aria-labelledby="start-date-heading">
+        <div class="section-title-row">
+          <h2 id="start-date-heading">補完食 開始日</h2>
+        </div>
+        <p class="helper-text">開始日を設定すると、現在の週が自動で表示されます。</p>
+        <div class="field-group">
+          <input id="start-date-input" type="date" />
+          <button class="secondary-button" id="save-start-date-button" type="button">保存</button>
+        </div>
+        <p class="status-message" id="start-date-status" role="status" aria-live="polite"></p>
+      </section>
+
+      <section class="card" aria-labelledby="insta-heading">
+        <div class="section-title-row">
+          <h2 id="insta-heading">投稿の記録</h2>
+        </div>
+
+        <div class="field-group" id="week-nav">
+          <span class="field-label">表示する週</span>
+          <div class="week-selector">
+            <button class="secondary-button" id="prev-week-button" type="button" aria-label="前の週">◀</button>
+            <span class="week-label" id="current-week-label">-</span>
+            <button class="secondary-button" id="next-week-button" type="button" aria-label="次の週">▶</button>
+          </div>
+        </div>
+
+        <label class="field-group" for="insta-search">
+          <span class="field-label">材料・要約で検索</span>
+          <input id="insta-search" type="search" placeholder="例: しらす" autocomplete="off" />
+        </label>
+
+        <div class="insta-list" id="insta-list" aria-live="polite"></div>
+      </section>
+    </main>
+
+    <script type="module" src="js/insta.js"></script>
+  </body>
+</html>
