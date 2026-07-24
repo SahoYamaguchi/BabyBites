@@ -531,3 +531,69 @@ textarea {
 #start-date-card input[type="date"] {
   flex: 1;
 }
+
+.nutrient-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.nutrient-card {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px;
+  background: #fffdf9;
+}
+
+.nutrient-card h3 {
+  font-size: 0.95rem;
+  margin-bottom: 8px;
+}
+
+.nutrient-values {
+  margin-bottom: 8px;
+}
+
+.nutrient-intake {
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+
+.nutrient-target {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.nutrient-bar-track {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--border);
+  overflow: hidden;
+}
+
+.nutrient-bar-fill {
+  height: 100%;
+  background: var(--primary);
+  border-radius: 999px;
+}
+
+.nutrient-bar-fill.is-over {
+  background: var(--success);
+}
+
+.nutrient-percentage {
+  margin-top: 6px;
+  font-weight: 700;
+  text-align: right;
+}
+
+.nutrient-percentage.is-over {
+  color: var(--success);
+}
+
+@media (max-width: 420px) {
+  .nutrient-grid {
+    grid-template-columns: 1fr;
+  }
+}
