@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>BabyBites - 栄養素チェック</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <div>
+        <p class="eyebrow">BabyBites</p>
+        <h1>栄養素チェック</h1>
+      </div>
+      <nav class="nav-links" aria-label="画面切り替え">
+        <a href="index.html">入力</a>
+        <a href="history.html">履歴</a>
+        <a href="foods.html">図鑑</a>
+        <a href="insta.html">投稿</a>
+        <a aria-current="page" href="nutrition.html">栄養素</a>
+      </nav>
+    </header>
+
+    <main class="container">
+      <section class="card" id="baby-settings-card" aria-labelledby="baby-settings-heading">
+        <div class="section-title-row">
+          <h2 id="baby-settings-heading">設定</h2>
+        </div>
+        <div class="field-group" id="birth-date-row">
+          <label for="birth-date-input">
+            <span class="field-label">生年月日</span>
+            <input id="birth-date-input" type="date" />
+          </label>
+        </div>
+        <div class="field-group" id="absorption-rate-row">
+          <label for="absorption-rate-input">
+            <span class="field-label">鉄の吸収率(%)</span>
+            <input id="absorption-rate-input" type="number" min="1" max="100" step="1" />
+          </label>
+        </div>
+        <button class="secondary-button" id="save-baby-settings-button" type="button">保存</button>
+        <p class="status-message" id="baby-settings-status" role="status" aria-live="polite"></p>
+      </section>
+
+      <section class="card" aria-labelledby="nutrition-heading">
+        <div class="section-title-row">
+          <h2 id="nutrition-heading">摂取状況</h2>
+        </div>
+
+        <div class="toggle-group" id="period-toggle" role="radiogroup" aria-label="期間を選択">
+          <label class="toggle-option">
+            <input type="radio" name="period" value="day" checked />
+            <span>今日</span>
+          </label>
+          <label class="toggle-option">
+            <input type="radio" name="period" value="week" />
+            <span>今週</span>
+          </label>
+        </div>
+
+        <div class="nutrition-status" id="nutrition-status" aria-live="polite"></div>
+      </section>
+    </main>
+
+    <script type="module" src="js/nutrition.js"></script>
+  </body>
+</html>
