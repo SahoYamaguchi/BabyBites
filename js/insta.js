@@ -22,7 +22,11 @@ function expandSearchTerms(term) {
 }
 
 function recordMatchesAnyTerm(record, terms) {
-  return terms.some((term) => record.ingredient.includes(term) || record.summary.includes(term));
+  return terms.some((term) =>
+    record.ingredient.includes(term)
+    || record.summary.includes(term)
+    || (record.usedFoods || []).some((food) => food === term) // ← 追加(完全一致)
+  );
 }
 
 
