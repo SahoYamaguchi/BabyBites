@@ -676,6 +676,7 @@ textarea {
 }
 
 .settings-fields {
-  display: grid;
-  gap: 28px; /* 通常のfield-group間(14px)より広めに */
+    display: grid;
+    margin-top: 12px;
+    margin-bottom: 20px;
 }
