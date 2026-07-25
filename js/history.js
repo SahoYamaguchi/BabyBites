@@ -38,6 +38,24 @@ function formatTime(date) {
   }).format(date);
 }
 
+// スプレッドシートが "20%" のような文字列を自動で 0.2 のような数値に
+// 変換してしまうことがあるため、表示直前に %表記へ正規化する。
+function formatPercentage(value) {
+  if (value === undefined || value === null || value === "") {
+    return "";
+  }
+  const strValue = String(value).trim();
+  if (strValue.endsWith("%")) {
+    return strValue;
+  }
+  const numValue = Number(strValue);
+  if (Number.isNaN(numValue)) {
+    return strValue;
+  }
+  const percentValue = Math.abs(numValue) <= 1 ? numValue * 100 : numValue;
+  return `${Math.round(percentValue)}%`;
+}
+
 function normalizeRecord(record) {
   const date = new Date(record.date);
   return {
@@ -57,38 +75,41 @@ function groupRecordsByDate(records) {
   }, new Map());
 }
 
-function createRecordItem(record) {
-  const item = document.createElement("article");
-  item.className = "history-item";
-
-  const amountParts = [
-    record.amountLabel,
-    record.amountGram ? `${record.amountGram}g` : "",
-    record.spoonCount ? `${record.spoonCount}杯` : "",
-  ].filter(Boolean);
-  const mealTypeDisplay = record.mealType ? MEAL_TYPE_EMOJIS[record.mealType] || escapeHtml(record.mealType) : "";
-  const reactionDisplay = record.reaction ? REACTION_EMOJIS[record.reaction] || escapeHtml(record.reaction) : "";
-  const memo = record.memo ? `<p class="history-memo">${escapeHtml(record.memo)}</p>` : "";
-
-  item.innerHTML = `
-    <div class="history-item-main">
-      <time class="history-time" datetime="${record.parsedDate.toISOString()}">${mealTypeDisplay ? `${mealTypeDisplay} ` : ""}${formatTime(record.parsedDate)}</time>
-      <div>
-        <h3>${record.isFirstTime ? "🎉 " : ""}${escapeHtml(record.foodName || "未入力")}</h3>
-        <p class="history-amount">${escapeHtml(amountParts.join(" / ") || "量未入力")}${reactionDisplay ? ` <span class="history-reaction" aria-label="反応: ${escapeHtml(record.reaction)}">${reactionDisplay}</span>` : ""}</p>
-        ${memo}
-      </div>
-    </div>
-  `;
-
-  return item;
-}
-
 function escapeHtml(value) {
   return String(value).replace(/[&<>'"]/g, (character) => {
     const entities = { "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" };
     return entities[character];
   });
+}
+
+function createRecordItem(record) {
+  const item = document.createElement("article");
+  item.className = "history-item";
+
+  // index.htmlの入力順序(さじ→g→割合→反応→区分→メモ→日時)に合わせて表示する
+  const spoonText = record.spoonCount ? `さじ${escapeHtml(record.spoonCount)}杯` : "";
+  const gramText = record.amountGram ? `${escapeHtml(record.amountGram)}g` : "";
+  const percentageText = formatPercentage(record.amountLabel);
+  const amountParts = [spoonText, gramText, percentageText].filter(Boolean);
+
+  const reactionDisplay = record.reaction ? (REACTION_EMOJIS[record.reaction] || escapeHtml(record.reaction)) : "";
+  const mealTypeDisplay = record.mealType ? (MEAL_TYPE_EMOJIS[record.mealType] || escapeHtml(record.mealType)) : "";
+  const memo = record.memo ? `<p class="history-memo">${escapeHtml(record.memo)}</p>` : "";
+
+  item.innerHTML = `
+    <div class="history-item-main">
+      <div>
+        <h3>${record.isFirstTime ? "🎉 " : ""}${escapeHtml(record.foodName || "未入力")}</h3>
+        <p class="history-amount">${escapeHtml(amountParts.join(" / ") || "量未入力")}</p>
+        ${reactionDisplay ? `<p class="history-reaction-line"><span class="history-reaction" aria-label="反応: ${escapeHtml(record.reaction)}">${reactionDisplay}</span></p>` : ""}
+        ${mealTypeDisplay ? `<p class="history-meal-type">${mealTypeDisplay} ${escapeHtml(record.mealType)}</p>` : ""}
+        ${memo}
+        <time class="history-time" datetime="${record.parsedDate.toISOString()}">${formatTime(record.parsedDate)}</time>
+      </div>
+    </div>
+  `;
+
+  return item;
 }
 
 function renderHistory(records) {
@@ -109,7 +130,6 @@ function renderHistory(records) {
     .forEach(([, dateRecords]) => {
       dateRecords.sort((a, b) => b.parsedDate.getTime() - a.parsedDate.getTime());
 
-
       const section = document.createElement("section");
       section.className = "history-day";
 
@@ -119,7 +139,7 @@ function renderHistory(records) {
 
       dateRecords.forEach((record) => section.append(createRecordItem(record)));
       historyList.append(section);
-  });
+    });
 }
 
 async function loadRecords() {
