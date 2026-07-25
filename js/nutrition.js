@@ -1,13 +1,7 @@
-import { getNutrientStatus, getSettings, saveSetting } from "./api.js";
+import { getNutrientStatus } from "./api.js";
 
-const birthDateInput = document.querySelector("#birth-date-input");
-const absorptionRateInput = document.querySelector("#absorption-rate-input");
-const saveBabySettingsButton = document.querySelector("#save-baby-settings-button");
-const babySettingsStatus = document.querySelector("#baby-settings-status");
 const periodInputs = document.querySelectorAll('input[name="period"]');
 const nutritionStatus = document.querySelector("#nutrition-status");
-
-const DEFAULT_ABSORPTION_RATE = 10;
 
 let selectedPeriod = "day";
 
@@ -16,47 +10,6 @@ function todayString() {
   const offsetDate = new Date(now.getTime() - now.getTimezoneOffset() * 60_000);
   return offsetDate.toISOString().slice(0, 10);
 }
-
-function showBabySettingsStatus(message, type = "info") {
-  babySettingsStatus.textContent = message;
-  babySettingsStatus.className = `status-message ${type}`;
-}
-
-async function loadBabySettings() {
-  try {
-    const data = await getSettings();
-    const birthDate = data.settings?.["生年月日"] || "";
-    const absorptionRate = data.settings?.["鉄吸収率"] || String(DEFAULT_ABSORPTION_RATE);
-    birthDateInput.value = birthDate;
-    absorptionRateInput.value = absorptionRate;
-  } catch (error) {
-    console.warn(error);
-    showBabySettingsStatus("設定の取得に失敗しました。", "error");
-  }
-}
-
-saveBabySettingsButton.addEventListener("click", async () => {
-  const birthDate = birthDateInput.value;
-  const absorptionRate = absorptionRateInput.value || String(DEFAULT_ABSORPTION_RATE);
-
-  if (!birthDate) {
-    showBabySettingsStatus("生年月日を選択してください。", "error");
-    return;
-  }
-
-  try {
-    saveBabySettingsButton.disabled = true;
-    await saveSetting("生年月日", birthDate);
-    await saveSetting("鉄吸収率", absorptionRate);
-    showBabySettingsStatus("設定を保存しました。", "success");
-    await loadStatus();
-  } catch (error) {
-    console.error(error);
-    showBabySettingsStatus("設定の保存に失敗しました。", "error");
-  } finally {
-    saveBabySettingsButton.disabled = false;
-  }
-});
 
 periodInputs.forEach((input) => {
   input.addEventListener("change", () => {
@@ -103,7 +56,7 @@ async function loadStatus() {
     });
 
     if (!data.success) {
-      nutritionStatus.innerHTML = `<p class="food-info-empty">${data.message || "計算できませんでした。設定を確認してください。"}</p>`;
+      nutritionStatus.innerHTML = `<p class="food-info-empty">${data.message || "計算できませんでした。設定画面で生年月日を登録してください。"}</p>`;
       return;
     }
 
@@ -125,9 +78,4 @@ async function loadStatus() {
   }
 }
 
-async function init() {
-  await loadBabySettings();
-  await loadStatus();
-}
-
-init();
+loadStatus();
