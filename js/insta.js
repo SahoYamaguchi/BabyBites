@@ -1,18 +1,30 @@
-import { getInstaRecords, getSettings, saveSetting } from "./api.js";
+import { getInstaRecords, getSettings } from "./api.js";
 
-const startDateInput = document.querySelector("#start-date-input");
-const saveStartDateButton = document.querySelector("#save-start-date-button");
-const startDateStatus = document.querySelector("#start-date-status");
 const currentWeekLabel = document.querySelector("#current-week-label");
 const prevWeekButton = document.querySelector("#prev-week-button");
 const nextWeekButton = document.querySelector("#next-week-button");
 const instaSearchInput = document.querySelector("#insta-search");
 const instaList = document.querySelector("#insta-list");
 
-let startDate = null; // Date | null
 let selectedWeek = 1;
 let searchTerm = "";
 let requestId = 0;
+
+const SYNONYM_GROUPS = [
+  ["つぶし粥", "つぶしがゆ", "5倍がゆ", "10倍がゆ"],
+  // 他にも表記ゆれがあれば配列を追加してください。例:
+  // ["しらす", "しらす干し"],
+];
+
+function expandSearchTerms(term) {
+  const matchedGroup = SYNONYM_GROUPS.find((group) => group.some((word) => word.includes(term) || term.includes(word)));
+  return matchedGroup ? [...new Set([term, ...matchedGroup])] : [term];
+}
+
+function recordMatchesAnyTerm(record, terms) {
+  return terms.some((term) => record.ingredient.includes(term) || record.summary.includes(term));
+}
+
 
 function escapeHtml(value) {
   return String(value).replace(/[&<>'"]/g, (character) => {
@@ -32,48 +44,17 @@ function calculateCurrentWeek(startDateValue) {
   return dayNumber < 1 ? 1 : Math.ceil(dayNumber / 7);
 }
 
-function showStartDateStatus(message, type = "info") {
-  startDateStatus.textContent = message;
-  startDateStatus.className = `status-message ${type}`;
-}
-
 async function loadSettings() {
   try {
     const data = await getSettings();
     const savedStartDate = data.settings?.["開始日"] || "";
     if (savedStartDate) {
-      startDate = savedStartDate;
-      startDateInput.value = savedStartDate;
       selectedWeek = calculateCurrentWeek(savedStartDate);
     }
   } catch (error) {
     console.warn(error);
-    showStartDateStatus("設定の取得に失敗しました。", "error");
   }
 }
-
-saveStartDateButton.addEventListener("click", async () => {
-  const value = startDateInput.value;
-  if (!value) {
-    showStartDateStatus("開始日を選択してください。", "error");
-    return;
-  }
-
-  try {
-    saveStartDateButton.disabled = true;
-    await saveSetting("開始日", value);
-    startDate = value;
-    selectedWeek = calculateCurrentWeek(value);
-    showStartDateStatus("開始日を保存しました。", "success");
-    renderWeekLabel();
-    await loadRecords();
-  } catch (error) {
-    console.error(error);
-    showStartDateStatus("開始日の保存に失敗しました。", "error");
-  } finally {
-    saveStartDateButton.disabled = false;
-  }
-});
 
 function renderWeekLabel() {
   currentWeekLabel.textContent = `${selectedWeek}週目`;
@@ -134,16 +115,23 @@ async function loadRecords() {
 
   try {
     const data = await getInstaRecords({
-      week: searchTerm ? "" : selectedWeek, // 検索中は週を無視して全体から検索する
-      keyword: searchTerm,
+      // 検索中は週もキーワードもサーバー側では絞り込まず、全件取得してクライアント側でフィルタする
+      // (同義語グループを使ったOR一致をするため)
+      week: searchTerm ? "" : selectedWeek,
+      keyword: "",
     });
 
     if (currentRequestId !== requestId) {
       return;
     }
 
-    const records = searchTerm ? sortRecordsForSearch(data.records || []) : data.records;
-    renderRecords(records);
+    if (searchTerm) {
+      const terms = expandSearchTerms(searchTerm);
+      const matched = (data.records || []).filter((record) => recordMatchesAnyTerm(record, terms));
+      renderRecords(sortRecordsForSearch(matched));
+    } else {
+      renderRecords(data.records);
+    }
   } catch (error) {
     console.warn(error);
     if (currentRequestId !== requestId) {
