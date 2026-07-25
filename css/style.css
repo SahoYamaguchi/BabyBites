@@ -597,3 +597,59 @@ textarea {
     grid-template-columns: 1fr;
   }
 }
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0;
+  background: rgb(44 40 37 / 45%);
+  z-index: 100;
+}
+
+.modal-overlay[hidden] {
+  display: none;
+}
+
+.modal-card {
+  width: min(100%, 760px);
+  max-height: 85vh;
+  overflow-y: auto;
+  border-radius: 22px 22px 0 0;
+  padding: 18px;
+  background: var(--card);
+}
+
+@media (min-width: 560px) {
+  .modal-overlay {
+    align-items: center;
+  }
+
+  .modal-card {
+    border-radius: 22px;
+    max-height: 80vh;
+  }
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.modal-header h2 {
+  margin-bottom: 0;
+  font-size: 1.15rem;
+}
+
+.modal-close-button {
+  border: 0;
+  background: transparent;
+  font-size: 1.4rem;
+  line-height: 1;
+  color: var(--muted);
+  padding: 4px 8px;
+}
