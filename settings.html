@@ -28,20 +28,26 @@
           <h2 id="settings-heading">基本設定</h2>
         </div>
 
-        <label class="field-group" for="birth-date-input">
-          <span class="field-label">生年月日</span>
-          <input id="birth-date-input" type="date" />
-        </label>
+        <div class="settings-fields">
+          <label class="field-group" for="birth-date-input">
+            <span class="field-label">生年月日</span>
+            <input id="birth-date-input" type="date" />
+          </label>
+        </div>
 
-        <label class="field-group" for="start-date-input">
-          <span class="field-label">補完食 開始日</span>
-          <input id="start-date-input" type="date" />
-        </label>
+        <div class="settings-fields">
+          <label class="field-group" for="start-date-input">
+            <span class="field-label">補完食 開始日</span>
+            <input id="start-date-input" type="date" />
+          </label>
+        </div>
 
-        <label class="field-group" for="absorption-rate-input">
-          <span class="field-label">鉄の吸収率(%)</span>
-          <input id="absorption-rate-input" type="number" min="1" max="100" step="1" />
-        </label>
+        <div class="settings-fields">
+          <label class="field-group" for="absorption-rate-input">
+            <span class="field-label">鉄の吸収率(%)</span>
+            <input id="absorption-rate-input" type="number" min="1" max="100" step="1" />
+          </label>
+        </div>
 
         <button class="primary-button" id="save-settings-button" type="button">保存</button>
         <p class="status-message" id="settings-status" role="status" aria-live="polite"></p>
