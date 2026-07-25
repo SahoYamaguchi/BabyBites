@@ -680,3 +680,14 @@ textarea {
     margin-top: 40px;
     margin-bottom: 25px;
 }
+
+.history-reaction-line,
+.history-meal-type {
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+.history-time {
+  display: block;
+  margin-top: 6px;
+}
