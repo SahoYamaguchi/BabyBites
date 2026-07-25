@@ -674,3 +674,8 @@ textarea {
 .container {
   padding-bottom: 96px; /* 固定バーに隠れないよう余白を確保 */
 }
+
+.settings-fields {
+  display: grid;
+  gap: 28px; /* 通常のfield-group間(14px)より広めに */
+}
