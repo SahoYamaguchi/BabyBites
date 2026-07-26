@@ -19,6 +19,12 @@ function escapeHtml(value) {
   });
 }
 
+function scrollFoodInfoIntoView() {
+  window.requestAnimationFrame(() => {
+    foodInfoPanel.scrollIntoView({ behavior: "smooth", block: "center" });
+  });
+}
+
 function normalizeFoodMaster(foods) {
   const seen = new Set();
   return foods.reduce((items, food) => {
@@ -128,6 +134,7 @@ function renderFoods() {
         selectedGroup = group.displayGroup;
         renderFoods();
         loadFoodInfo(group.displayGroup, group.names);
+        scrollFoodInfoIntoView();
       });
 
       grid.append(button);
@@ -151,7 +158,7 @@ async function loadFoods() {
   }
 }
 
-function renderFoodInfoList(title, items) {
+function renderFoodInfoList(title, items, displayGroup) {
   if (!Array.isArray(items) || items.length === 0) {
     return `
       <section class="food-info-section">
@@ -163,7 +170,9 @@ function renderFoodInfoList(title, items) {
 
   const listItems = items.map((item) => {
     const source = item.source ? ` <span class="food-info-source">${escapeHtml(item.source)}</span>` : "";
-    return `<li>${escapeHtml(item.text)}${source}</li>`;
+    const showFoodName = item.foodName && item.foodName !== displayGroup;
+    const prefix = showFoodName ? `<strong class="food-info-item-name">${escapeHtml(item.foodName)}</strong>: ` : "";
+    return `<li>${prefix}${escapeHtml(item.text)}${source}</li>`;
   }).join("");
 
   return `
@@ -178,7 +187,7 @@ function renderFoodInfoList(title, items) {
 function dedupeInfoItems(items) {
   const seen = new Set();
   return items.filter((item) => {
-    const key = `${item.text}__${item.source || ""}`;
+    const key = `${item.foodName || ""}__${item.text}__${item.source || ""}`;
     if (seen.has(key)) {
       return false;
     }
@@ -200,16 +209,24 @@ async function loadFoodInfo(displayGroup, foodNames) {
       return;
     }
 
-    const allCautions = dedupeInfoItems(results.flatMap((r) => (Array.isArray(r.cautions) ? r.cautions : [])));
-    const allCookingMethods = dedupeInfoItems(results.flatMap((r) => (Array.isArray(r.cookingMethods) ? r.cookingMethods : [])));
+    const allCautions = dedupeInfoItems(
+      results.flatMap((r, index) =>
+        (Array.isArray(r.cautions) ? r.cautions.map((item) => ({ ...item, foodName: foodNames[index] })) : [])
+      )
+    );
+    const allCookingMethods = dedupeInfoItems(
+      results.flatMap((r, index) =>
+        (Array.isArray(r.cookingMethods) ? r.cookingMethods.map((item) => ({ ...item, foodName: foodNames[index] })) : [])
+      )
+    );
 
     foodInfoPanel.innerHTML = `
       <div class="food-info-heading">
         <h3>${escapeHtml(displayGroup)} のメモ</h3>
         <p>注意点が複数ある場合は箇条書きで表示します。</p>
       </div>
-      ${renderFoodInfoList("注意点", allCautions)}
-      ${renderFoodInfoList("調理法", allCookingMethods)}
+      ${renderFoodInfoList("注意点", allCautions, displayGroup)}
+      ${renderFoodInfoList("調理法", allCookingMethods, displayGroup)}
     `;
   } catch (error) {
     console.warn(error);
