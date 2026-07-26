@@ -6,8 +6,8 @@ const foodButtons = document.querySelector("#food-buttons");
 const foodInfoPanel = document.querySelector("#food-info-panel");
 const foodSearchInput = document.querySelector("#food-search");
 
-let allFoods = []; // [{ name, category }]
-let selectedFood = "";
+let allFoods = []; // [{ name, category, displayGroup }]
+let selectedGroup = "";
 let foodInfoRequestId = 0;
 let searchTerm = "";
 const openCategories = new Set();
@@ -28,19 +28,39 @@ function normalizeFoodMaster(foods) {
     }
     seen.add(name);
     const category = String(food?.category || "").trim() || "その他";
-    items.push({ name, category });
+    const displayGroup = String(food?.displayGroup || "").trim() || name;
+    items.push({ name, category, displayGroup });
     return items;
   }, []);
 }
 
-function groupByCategory(foods) {
-  const groups = new Map();
+// 表示グループ単位でまとめる。1グループに複数の食材名マスタが含まれる場合、
+// カテゴリはグループ内最初の食材のものを採用する(通常は同じカテゴリのはず)。
+function buildDisplayGroups(foods) {
+  const groupMap = new Map(); // displayGroup -> { category, names: [] }
 
   foods.forEach((food) => {
-    if (!groups.has(food.category)) {
-      groups.set(food.category, []);
+    if (!groupMap.has(food.displayGroup)) {
+      groupMap.set(food.displayGroup, { category: food.category, names: [] });
     }
-    groups.get(food.category).push(food);
+    groupMap.get(food.displayGroup).names.push(food.name);
+  });
+
+  return [...groupMap.entries()].map(([displayGroup, { category, names }]) => ({
+    displayGroup,
+    category,
+    names,
+  }));
+}
+
+function groupByCategory(displayGroups) {
+  const groups = new Map();
+
+  displayGroups.forEach((group) => {
+    if (!groups.has(group.category)) {
+      groups.set(group.category, []);
+    }
+    groups.get(group.category).push(group);
   });
 
   const orderedCategories = [
@@ -48,24 +68,25 @@ function groupByCategory(foods) {
     ...[...groups.keys()].filter((category) => !CATEGORY_ORDER.includes(category)),
   ];
 
-  return orderedCategories.map((category) => ({
-    category,
-    foods: groups.get(category),
-  }));
+  return orderedCategories.map((category) => ({ category, groups: groups.get(category) }));
 }
 
-function getFilteredFoods() {
+function getFilteredDisplayGroups() {
+  const displayGroups = buildDisplayGroups(allFoods);
   if (!searchTerm) {
-    return allFoods;
+    return displayGroups;
   }
-  return allFoods.filter((food) => food.name.includes(searchTerm));
+  // 表示グループ名、またはグループ内のいずれかの食材名マスタに一致したら表示する
+  return displayGroups.filter((group) =>
+    group.displayGroup.includes(searchTerm) || group.names.some((name) => name.includes(searchTerm))
+  );
 }
 
 function renderFoods() {
-  const filteredFoods = getFilteredFoods();
+  const filteredGroups = getFilteredDisplayGroups();
   foodButtons.innerHTML = "";
 
-  if (filteredFoods.length === 0) {
+  if (filteredGroups.length === 0) {
     const emptyMessage = document.createElement("p");
     emptyMessage.className = "food-info-empty";
     emptyMessage.textContent = "該当する食材が見つかりません。";
@@ -73,12 +94,11 @@ function renderFoods() {
     return;
   }
 
-  const groupedFoods = groupByCategory(filteredFoods);
+  const groupedByCategory = groupByCategory(filteredGroups);
 
-  groupedFoods.forEach(({ category, foods }) => {
+  groupedByCategory.forEach(({ category, groups }) => {
     const details = document.createElement("details");
     details.className = "food-category";
-    // 検索中はヒットしたカテゴリを自動で開く。それ以外は開閉状態を記憶する。
     details.open = searchTerm ? true : openCategories.has(category);
 
     details.addEventListener("toggle", () => {
@@ -91,23 +111,23 @@ function renderFoods() {
 
     const summary = document.createElement("summary");
     summary.className = "food-category-summary";
-    summary.textContent = `${category}(${foods.length})`;
+    summary.textContent = `${category}(${groups.length})`;
     details.append(summary);
 
     const grid = document.createElement("div");
     grid.className = "food-grid";
 
-    foods.forEach((food) => {
+    groups.forEach((group) => {
       const button = document.createElement("button");
       button.type = "button";
       button.className = "food-button";
-      button.textContent = food.name;
-      button.setAttribute("aria-pressed", String(food.name === selectedFood));
+      button.textContent = group.displayGroup;
+      button.setAttribute("aria-pressed", String(group.displayGroup === selectedGroup));
 
       button.addEventListener("click", () => {
-        selectedFood = food.name;
+        selectedGroup = group.displayGroup;
         renderFoods();
-        loadFoodInfo(food.name);
+        loadFoodInfo(group.displayGroup, group.names);
       });
 
       grid.append(button);
@@ -154,37 +174,53 @@ function renderFoodInfoList(title, items) {
   `;
 }
 
-async function loadFoodInfo(foodName) {
+// 表示グループ内の全食材名マスタについてgetFoodInfoを呼び、結果をまとめて重複排除する
+function dedupeInfoItems(items) {
+  const seen = new Set();
+  return items.filter((item) => {
+    const key = `${item.text}__${item.source || ""}`;
+    if (seen.has(key)) {
+      return false;
+    }
+    seen.add(key);
+    return true;
+  });
+}
+
+async function loadFoodInfo(displayGroup, foodNames) {
   const requestId = foodInfoRequestId + 1;
   foodInfoRequestId = requestId;
   foodInfoPanel.hidden = false;
-  foodInfoPanel.innerHTML = `<p class="food-info-loading">${escapeHtml(foodName)} の情報を読み込んでいます...</p>`;
+  foodInfoPanel.innerHTML = `<p class="food-info-loading">${escapeHtml(displayGroup)} の情報を読み込んでいます...</p>`;
 
   try {
-    const data = await getFoodInfo(foodName);
+    const results = await Promise.all(foodNames.map((name) => getFoodInfo(name)));
 
-    if (requestId !== foodInfoRequestId || selectedFood !== foodName) {
+    if (requestId !== foodInfoRequestId || selectedGroup !== displayGroup) {
       return;
     }
 
+    const allCautions = dedupeInfoItems(results.flatMap((r) => (Array.isArray(r.cautions) ? r.cautions : [])));
+    const allCookingMethods = dedupeInfoItems(results.flatMap((r) => (Array.isArray(r.cookingMethods) ? r.cookingMethods : [])));
+
     foodInfoPanel.innerHTML = `
       <div class="food-info-heading">
-        <h3>${escapeHtml(foodName)} のメモ</h3>
+        <h3>${escapeHtml(displayGroup)} のメモ</h3>
         <p>注意点が複数ある場合は箇条書きで表示します。</p>
       </div>
-      ${renderFoodInfoList("注意点", data.cautions)}
-      ${renderFoodInfoList("調理法", data.cookingMethods)}
+      ${renderFoodInfoList("注意点", allCautions)}
+      ${renderFoodInfoList("調理法", allCookingMethods)}
     `;
   } catch (error) {
     console.warn(error);
 
-    if (requestId !== foodInfoRequestId || selectedFood !== foodName) {
+    if (requestId !== foodInfoRequestId || selectedGroup !== displayGroup) {
       return;
     }
 
     foodInfoPanel.innerHTML = `
       <div class="food-info-heading">
-        <h3>${escapeHtml(foodName)} のメモ</h3>
+        <h3>${escapeHtml(displayGroup)} のメモ</h3>
         <p class="food-info-empty">注意点・調理法を取得できませんでした。</p>
       </div>
     `;
