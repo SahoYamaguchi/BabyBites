@@ -599,6 +599,12 @@ textarea {
   }
 }
 
+@media (min-width: 560px) {
+  .nutrient-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
 .modal-overlay {
   position: fixed;
   inset: 0;
