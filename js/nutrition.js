@@ -3,6 +3,8 @@ import { getNutrientStatus } from "./api.js";
 const periodInputs = document.querySelectorAll('input[name="period"]');
 const nutritionStatus = document.querySelector("#nutrition-status");
 
+const NUTRIENT_ORDER = ["energy", "iron", "protein", "zinc", "calcium", "vitaminD"];
+
 let selectedPeriod = "day";
 
 function todayString() {
@@ -18,12 +20,16 @@ periodInputs.forEach((input) => {
   });
 });
 
-function renderNutrientCard(label, unit, data) {
-  if (!data || data.target === null || data.target === undefined) {
+function renderNutrientCard(data) {
+  if (!data) {
+    return "";
+  }
+
+  if (data.target === null || data.target === undefined) {
     return `
       <div class="nutrient-card">
-        <h3>${label}</h3>
-        <p class="food-info-empty">計算できませんでした。</p>
+        <h3>${data.label}</h3>
+        <p class="food-info-empty">まだデータが揃っていません。</p>
       </div>
     `;
   }
@@ -33,10 +39,10 @@ function renderNutrientCard(label, unit, data) {
 
   return `
     <div class="nutrient-card">
-      <h3>${label}</h3>
+      <h3>${data.label}</h3>
       <p class="nutrient-values">
-        <span class="nutrient-intake">${data.intake}${unit}</span>
-        <span class="nutrient-target"> / 目標 ${data.target}${unit}</span>
+        <span class="nutrient-intake">${data.intake}${data.unit}</span>
+        <span class="nutrient-target"> / 目標 ${data.target}${data.unit}</span>
       </p>
       <div class="nutrient-bar-track">
         <div class="nutrient-bar-fill ${isOver ? "is-over" : ""}" style="width: ${Math.min(percentage, 100)}%"></div>
@@ -64,11 +70,12 @@ async function loadStatus() {
       ? `<p class="helper-text">グラム数・さじ杯数が未入力の記録が${data.unmeasuredCount}件あり、集計に含まれていません。</p>`
       : "";
 
+    const cards = NUTRIENT_ORDER.map((key) => renderNutrientCard(data[key])).join("");
+
     nutritionStatus.innerHTML = `
       <p class="helper-text">対象月齢帯: ${data.ageBand}か月</p>
       <div class="nutrient-grid">
-        ${renderNutrientCard("エネルギー", "kcal", data.energy)}
-        ${renderNutrientCard("鉄(吸収量換算)", "mg", data.iron)}
+        ${cards}
       </div>
       ${unmeasuredNote}
     `;
