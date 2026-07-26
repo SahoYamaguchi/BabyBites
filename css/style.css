@@ -697,3 +697,7 @@ textarea {
   display: block;
   margin-top: 6px;
 }
+
+.food-info-item-name {
+  color: var(--primary-dark);
+}
