@@ -701,3 +701,8 @@ textarea {
 .food-info-item-name {
   color: var(--primary-dark);
 }
+
+.food-heading-actions {
+  display: flex;
+  gap: 8px;
+}
