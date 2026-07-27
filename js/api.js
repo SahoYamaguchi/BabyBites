@@ -21,21 +21,6 @@ function ensureApiUrl() {
   }
 }
 
-function buildApiUrl(action, params = {}) {
-  ensureApiUrl();
-  const url = new URL(GAS_API_URL);
-  const searchParams = new URLSearchParams({ action });
-
-  Object.entries(params).forEach(([key, value]) => {
-    if (value !== undefined && value !== null && value !== "") {
-      searchParams.set(key, value);
-    }
-  });
-
-  url.search = searchParams.toString();
-  return url.toString();
-}
-
 async function requestJson(url, options = {}) {
   ensureApiUrl();
 
