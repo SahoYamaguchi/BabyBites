@@ -25,10 +25,13 @@
     <main class="container">
       <section class="card" aria-labelledby="food-heading">
         <div class="section-title-row">
-          <h2 id="food-heading">よく使う食材</h2>
-          <button class="secondary-button" id="open-food-search-button" type="button">食材を探す</button>
+          <h2 id="food-heading">今日の食材</h2>
+          <div class="food-heading-actions">
+            <button class="secondary-button" id="open-food-history-button" type="button">履歴</button>
+            <button class="secondary-button" id="open-food-search-button" type="button">食材を探す</button>
+          </div>
         </div>
-        <p class="helper-text">食材を1つ選んでください。選ぶと注意点・調理法を確認できます。</p>
+        <p class="helper-text">今日の投稿でよく出てくる食材です。選ぶと注意点・調理法を確認できます。</p>
         <div class="food-grid" id="food-buttons" aria-live="polite"></div>
         <div class="food-info-panel" id="food-info-panel" aria-live="polite" hidden></div>
       </section>
@@ -117,6 +120,20 @@
 
     <div class="fixed-submit-bar">
       <button class="primary-button" id="submit-button" type="submit" form="record-form">記録する</button>
+    </div>
+
+    <div class="modal-overlay" id="food-history-modal" hidden>
+      <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="food-history-modal-heading">
+        <div class="modal-header">
+          <h2 id="food-history-modal-heading">履歴から選ぶ</h2>
+          <button class="modal-close-button" id="food-history-modal-close" type="button" aria-label="閉じる">×</button>
+        </div>
+        <label class="field-group" for="food-history-modal-input">
+          <span class="field-label">食材を検索</span>
+          <input id="food-history-modal-input" type="search" placeholder="例: しらす" autocomplete="off" />
+        </label>
+        <div class="food-grid" id="food-history-modal-list" aria-live="polite"></div>
+      </div>
     </div>
 
     <div class="modal-overlay" id="food-search-modal" hidden>
