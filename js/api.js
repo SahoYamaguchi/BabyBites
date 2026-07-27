@@ -1,5 +1,20 @@
 export const GAS_API_URL = "https://script.google.com/macros/s/AKfycbyY32HRJlPQf8Kyx4Uobn8XD7LGyYwKTdGoQL2u9RZEgZY_fvyp-tqPH1nM-VZ_uo1k/exec";
 
+const API_TOKEN = '2vN9mP8xR4wK7zL3jT1q';
+
+function buildApiUrl(action, params = {}) {
+  ensureApiUrl();
+  const url = new URL(GAS_API_URL);
+  const searchParams = new URLSearchParams({ action, token: API_TOKEN });
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== "") {
+      searchParams.set(key, value);
+    }
+  });
+  url.search = searchParams.toString();
+  return url.toString();
+}
+
 function ensureApiUrl() {
   if (!GAS_API_URL) {
     throw new Error("GAS_API_URL is not configured. js/api.js の先頭でURLを設定してください。");
