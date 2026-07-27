@@ -1,11 +1,11 @@
-import { addFood, addRecord, getFoodInfo, getFoodList, getFoodMaster } from "./api.js";
+import { addFood, addRecord, getFoodInfo, getFoodList, getFoodMaster, getInstaRecords, getSettings } from "./api.js";
 
-const DEFAULT_FOODS = ["10倍がゆ", "にんじん", "かぼちゃ", "りんご", "しらす", "豆腐"];
 const CATEGORY_ORDER = ["炭水化物", "野菜", "果物", "タンパク質", "乳製品", "その他"];
 
 const foodButtons = document.querySelector("#food-buttons");
 const foodInfoPanel = document.querySelector("#food-info-panel");
 const openFoodSearchButton = document.querySelector("#open-food-search-button");
+const openFoodHistoryButton = document.querySelector("#open-food-history-button");
 const form = document.querySelector("#record-form");
 const amountGramInput = document.querySelector("#amount-gram");
 const spoonCountInput = document.querySelector("#spoon-count");
@@ -23,16 +23,23 @@ const foodSearchModalClose = document.querySelector("#food-search-modal-close");
 const foodSearchModalInput = document.querySelector("#food-search-modal-input");
 const foodSearchModalList = document.querySelector("#food-search-modal-list");
 
-let foods = [...DEFAULT_FOODS];
+const foodHistoryModal = document.querySelector("#food-history-modal");
+const foodHistoryModalClose = document.querySelector("#food-history-modal-close");
+const foodHistoryModalInput = document.querySelector("#food-history-modal-input");
+const foodHistoryModalList = document.querySelector("#food-history-modal-list");
+
+let todayFoods = []; // 今日のインスタ投稿から抽出した食材
+let recordedFoods = []; // これまで記録した食材(履歴モーダル用)
 let selectedFood = "";
 let selectedMealType = "";
 let selectedReaction = "";
 let messageTimer;
 let foodInfoRequestId = 0;
 
-let foodMaster = []; // [{ name, category }]
+let foodMaster = []; // [{ name, category, displayGroup }] (食材を探すモーダル用)
 let foodMasterLoaded = false;
 let modalSearchTerm = "";
+let historySearchTerm = "";
 
 function formatDateTimeLocal(date = new Date()) {
   const offsetDate = new Date(date.getTime() - date.getTimezoneOffset() * 60_000);
@@ -63,10 +70,31 @@ function escapeHtml(value) {
   });
 }
 
-function renderFoods() {
+// ----- 今日の食材(1st view) -----
+
+function calculateCurrentDay(startDateStr) {
+  if (!startDateStr) {
+    return null;
+  }
+  const start = new Date(`${startDateStr}T00:00:00`);
+  const today = new Date();
+  const diffDays = Math.floor((today.setHours(0, 0, 0, 0) - start.setHours(0, 0, 0, 0)) / 86_400_000);
+  const dayNumber = diffDays + 1;
+  return dayNumber < 1 ? null : dayNumber;
+}
+
+function renderTodayFoods() {
   foodButtons.innerHTML = "";
 
-  foods.forEach((food) => {
+  if (todayFoods.length === 0) {
+    const emptyMessage = document.createElement("p");
+    emptyMessage.className = "food-info-empty";
+    emptyMessage.textContent = "今日に該当する投稿の食材が見つかりません。「履歴」か「食材を探す」から選んでください。";
+    foodButtons.append(emptyMessage);
+    return;
+  }
+
+  todayFoods.forEach((food) => {
     const button = document.createElement("button");
     button.type = "button";
     button.className = "food-button";
@@ -74,32 +102,53 @@ function renderFoods() {
     button.setAttribute("aria-pressed", String(food === selectedFood));
 
     button.addEventListener("click", () => {
-      selectedFood = food;
-      renderFoods();
-      loadFoodInfo(food);
+      selectFood(food);
     });
 
     foodButtons.append(button);
   });
 }
 
-async function loadFoods() {
-  renderFoods();
+async function loadTodayFoods() {
+  foodButtons.innerHTML = `<p class="food-info-loading">今日の食材を読み込んでいます...</p>`;
 
   try {
-    const data = await getFoodList();
-    if (Array.isArray(data.foods) && data.foods.length > 0) {
-      const apiFoods = normalizeFoods(data.foods);
-      foods = normalizeFoods([...DEFAULT_FOODS, ...apiFoods]);
-      if (!foods.includes(selectedFood)) {
-        selectedFood = "";
-      }
-      renderFoods();
+    const settingsData = await getSettings();
+    const startDate = settingsData.settings?.["開始日"] || "";
+    const currentDay = calculateCurrentDay(startDate);
+
+    if (!currentDay) {
+      todayFoods = [];
+      renderTodayFoods();
+      return;
+    }
+
+    const data = await getInstaRecords({ day: currentDay });
+    const usedFoodsSet = new Set();
+    (data.records || []).forEach((record) => {
+      (record.usedFoods || []).forEach((food) => usedFoodsSet.add(food));
+    });
+    todayFoods = [...usedFoodsSet];
+    renderTodayFoods();
+  } catch (error) {
+    console.warn(error);
+    todayFoods = [];
+    renderTodayFoods();
+  }
+}
+
+async function selectFood(foodName) {
+  try {
+    if (!recordedFoods.includes(foodName)) {
+      await addFood(foodName);
+      recordedFoods = normalizeFoods([...recordedFoods, foodName]);
     }
   } catch (error) {
     console.warn(error);
-    showMessage("食材リストの取得に失敗しました。初期リストを表示しています。", "warning");
   }
+  selectedFood = foodName;
+  renderTodayFoods();
+  loadFoodInfo(foodName);
 }
 
 function hideFoodInfo() {
@@ -188,7 +237,7 @@ function resetForm() {
   selectedMealType = "";
   selectedReaction = "";
   dateTimeInput.value = formatDateTimeLocal();
-  renderFoods();
+  renderTodayFoods();
   hideFoodInfo();
   renderMealTypes();
   renderReactions();
@@ -210,7 +259,82 @@ reactionButtons.forEach((button) => {
   });
 });
 
-// ----- 食材マスタ検索モーダル -----
+// ----- 履歴モーダル(これまで記録した食材) -----
+
+function getFilteredRecordedFoods() {
+  if (!historySearchTerm) {
+    return recordedFoods;
+  }
+  return recordedFoods.filter((food) => food.includes(historySearchTerm));
+}
+
+function renderFoodHistoryModalList() {
+  const filtered = getFilteredRecordedFoods();
+  foodHistoryModalList.innerHTML = "";
+
+  if (filtered.length === 0) {
+    const emptyMessage = document.createElement("p");
+    emptyMessage.className = "food-info-empty";
+    emptyMessage.textContent = "該当する食材が見つかりません。";
+    foodHistoryModalList.append(emptyMessage);
+    return;
+  }
+
+  filtered.forEach((food) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "food-button";
+    button.textContent = food;
+    button.addEventListener("click", () => {
+      selectFood(food);
+      closeFoodHistoryModal();
+    });
+    foodHistoryModalList.append(button);
+  });
+}
+
+async function loadRecordedFoodsIfNeeded() {
+  if (recordedFoods.length > 0) {
+    renderFoodHistoryModalList();
+    return;
+  }
+  foodHistoryModalList.innerHTML = `<p class="food-info-loading">履歴を読み込んでいます...</p>`;
+
+  try {
+    const data = await getFoodList();
+    recordedFoods = normalizeFoods(Array.isArray(data.foods) ? data.foods : []);
+    renderFoodHistoryModalList();
+  } catch (error) {
+    console.warn(error);
+    foodHistoryModalList.innerHTML = `<p class="food-info-empty">履歴の取得に失敗しました。時間をおいて再度お試しください。</p>`;
+  }
+}
+
+function openFoodHistoryModal() {
+  foodHistoryModal.hidden = false;
+  historySearchTerm = "";
+  foodHistoryModalInput.value = "";
+  loadRecordedFoodsIfNeeded();
+  window.setTimeout(() => foodHistoryModalInput.focus(), 0);
+}
+
+function closeFoodHistoryModal() {
+  foodHistoryModal.hidden = true;
+}
+
+openFoodHistoryButton.addEventListener("click", openFoodHistoryModal);
+foodHistoryModalClose.addEventListener("click", closeFoodHistoryModal);
+foodHistoryModal.addEventListener("click", (event) => {
+  if (event.target === foodHistoryModal) {
+    closeFoodHistoryModal();
+  }
+});
+foodHistoryModalInput.addEventListener("input", () => {
+  historySearchTerm = foodHistoryModalInput.value.trim();
+  renderFoodHistoryModalList();
+});
+
+// ----- 食材マスタ検索モーダル(全部の食材) -----
 
 function normalizeFoodMaster(list) {
   const seen = new Set();
@@ -221,7 +345,8 @@ function normalizeFoodMaster(list) {
     }
     seen.add(name);
     const category = String(food?.category || "").trim() || "その他";
-    items.push({ name, category });
+    const displayGroup = String(food?.displayGroup || "").trim() || name;
+    items.push({ name, category, displayGroup });
     return items;
   }, []);
 }
@@ -253,13 +378,7 @@ function getFilteredFoodMaster() {
 
 async function selectFoodFromMaster(foodName) {
   try {
-    if (!foods.includes(foodName)) {
-      await addFood(foodName);
-      foods = normalizeFoods([...foods, foodName]);
-    }
-    selectedFood = foodName;
-    renderFoods();
-    loadFoodInfo(foodName);
+    await selectFood(foodName);
     closeFoodSearchModal();
   } catch (error) {
     console.error(error);
@@ -349,8 +468,13 @@ foodSearchModal.addEventListener("click", (event) => {
   }
 });
 document.addEventListener("keydown", (event) => {
-  if (event.key === "Escape" && !foodSearchModal.hidden) {
-    closeFoodSearchModal();
+  if (event.key === "Escape") {
+    if (!foodSearchModal.hidden) {
+      closeFoodSearchModal();
+    }
+    if (!foodHistoryModal.hidden) {
+      closeFoodHistoryModal();
+    }
   }
 });
 foodSearchModalInput.addEventListener("input", () => {
@@ -406,4 +530,4 @@ form.addEventListener("submit", async (event) => {
 dateTimeInput.value = formatDateTimeLocal();
 renderMealTypes();
 renderReactions();
-loadFoods();
+loadTodayFoods();
