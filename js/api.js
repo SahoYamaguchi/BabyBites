@@ -78,8 +78,8 @@ export function saveSetting(key, value) {
   return requestJson(buildApiUrl("saveSetting", { key, value }));
 }
 
-export function getInstaRecords({ week, keyword } = {}) {
-  return requestJson(buildApiUrl("getInstaRecords", { week, keyword }));
+export function getInstaRecords({ week, day, keyword } = {}) {
+  return requestJson(buildApiUrl("getInstaRecords", { week, day, keyword }));
 }
 
 export function getNutrientStatus({ period, date } = {}) {
