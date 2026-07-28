@@ -31,16 +31,15 @@
             <button class="secondary-button" id="open-food-search-button" type="button">食材を探す</button>
           </div>
         </div>
-        <p class="helper-text">インスタ投稿から推定した使用食材です。選ぶと注意点・調理法を確認できます。</p>
+        <p class="helper-text">今日の投稿でよく出てくる食材です。</p>
         <div class="food-grid" id="food-buttons" aria-live="polite"></div>
-        <div class="food-info-panel" id="food-info-panel" aria-live="polite" hidden></div>
       </section>
 
       <form class="card record-form" id="record-form">
-        <p class="helper-text">小さじ杯数かグラム数のどちらかを入力してください(両方入力した場合はグラム数を使用します)。</p>
+        <p class="helper-text">グラム数かさじ杯数のどちらかを入力してください(両方入力した場合はグラム数を使用します)。</p>
 
         <label class="field-group" for="spoon-count">
-          <span class="field-label">小さじ何杯分</span>
+          <span class="field-label">さじ何杯分</span>
           <select id="spoon-count" name="spoonCount">
             <option value="">未選択</option>
             <option value="0.5">0.5杯</option>
