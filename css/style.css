@@ -706,3 +706,7 @@ textarea {
   display: flex;
   gap: 8px;
 }
+
+.food-picker-back-button {
+  margin-bottom: 10px;
+}
