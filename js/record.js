@@ -40,6 +40,7 @@ let foodMaster = []; // [{ name, category, displayGroup }] (食材を探すモ�
 let foodMasterLoaded = false;
 let modalSearchTerm = "";
 let historySearchTerm = "";
+let concentrationPickerGroup = null; // { displayGroup, category, names } (お粥などの濃度選択中に使う)
 
 function formatDateTimeLocal(date = new Date()) {
   const offsetDate = new Date(date.getTime() - date.getTimezoneOffset() * 60_000);
@@ -351,14 +352,14 @@ function normalizeFoodMaster(list) {
   }, []);
 }
 
-function groupByCategory(list) {
+function groupItemsByCategory(items) {
   const groups = new Map();
 
-  list.forEach((food) => {
-    if (!groups.has(food.category)) {
-      groups.set(food.category, []);
+  items.forEach((item) => {
+    if (!groups.has(item.category)) {
+      groups.set(item.category, []);
     }
-    groups.get(food.category).push(food);
+    groups.get(item.category).push(item);
   });
 
   const orderedCategories = [
@@ -366,7 +367,26 @@ function groupByCategory(list) {
     ...[...groups.keys()].filter((category) => !CATEGORY_ORDER.includes(category)),
   ];
 
-  return orderedCategories.map((category) => ({ category, foods: groups.get(category) }));
+  return orderedCategories.map((category) => ({ category, items: groups.get(category) }));
+}
+
+// 表示グループ単位でまとめる。1グループに複数の食材名マスタが含まれる場合、
+// お粥の濃度選択のようにサブ画面で個別の食材名を選ばせる対象になる。
+function buildDisplayGroups(foods) {
+  const groupMap = new Map(); // displayGroup -> { category, names: [] }
+
+  foods.forEach((food) => {
+    if (!groupMap.has(food.displayGroup)) {
+      groupMap.set(food.displayGroup, { category: food.category, names: [] });
+    }
+    groupMap.get(food.displayGroup).names.push(food.name);
+  });
+
+  return [...groupMap.entries()].map(([displayGroup, { category, names }]) => ({
+    displayGroup,
+    category,
+    names,
+  }));
 }
 
 function getFilteredFoodMaster() {
@@ -379,6 +399,7 @@ function getFilteredFoodMaster() {
 async function selectFoodFromMaster(foodName) {
   try {
     await selectFood(foodName);
+    concentrationPickerGroup = null;
     closeFoodSearchModal();
   } catch (error) {
     console.error(error);
@@ -386,7 +407,46 @@ async function selectFoodFromMaster(foodName) {
   }
 }
 
+function renderConcentrationPicker() {
+  const { displayGroup, names } = concentrationPickerGroup;
+  foodSearchModalList.innerHTML = "";
+
+  const backButton = document.createElement("button");
+  backButton.type = "button";
+  backButton.className = "secondary-button food-picker-back-button";
+  backButton.textContent = "← 戻る";
+  backButton.addEventListener("click", () => {
+    concentrationPickerGroup = null;
+    renderFoodSearchModalList();
+  });
+  foodSearchModalList.append(backButton);
+
+  const heading = document.createElement("p");
+  heading.className = "helper-text";
+  heading.textContent = `${displayGroup}の濃度を選んでください。`;
+  foodSearchModalList.append(heading);
+
+  const grid = document.createElement("div");
+  grid.className = "food-grid";
+
+  names.forEach((name) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "food-button";
+    button.textContent = name;
+    button.addEventListener("click", () => selectFoodFromMaster(name));
+    grid.append(button);
+  });
+
+  foodSearchModalList.append(grid);
+}
+
 function renderFoodSearchModalList() {
+  if (concentrationPickerGroup) {
+    renderConcentrationPicker();
+    return;
+  }
+
   const filtered = getFilteredFoodMaster();
   foodSearchModalList.innerHTML = "";
 
@@ -398,27 +458,66 @@ function renderFoodSearchModalList() {
     return;
   }
 
-  const grouped = groupByCategory(filtered);
+  // 検索中は個別の食材名でそのままヒットさせたいので、表示グループでまとめない
+  if (modalSearchTerm) {
+    const grouped = groupItemsByCategory(filtered);
+    grouped.forEach(({ category, items }) => {
+      const details = document.createElement("details");
+      details.className = "food-category";
+      details.open = true;
 
-  grouped.forEach(({ category, foods: categoryFoods }) => {
+      const summary = document.createElement("summary");
+      summary.className = "food-category-summary";
+      summary.textContent = `${category}(${items.length})`;
+      details.append(summary);
+
+      const grid = document.createElement("div");
+      grid.className = "food-grid";
+
+      items.forEach((food) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "food-button";
+        button.textContent = food.name;
+        button.addEventListener("click", () => selectFoodFromMaster(food.name));
+        grid.append(button);
+      });
+
+      details.append(grid);
+      foodSearchModalList.append(details);
+    });
+    return;
+  }
+
+  const displayGroups = buildDisplayGroups(filtered);
+  const grouped = groupItemsByCategory(displayGroups.map((g) => ({ ...g })));
+
+  grouped.forEach(({ category, items }) => {
     const details = document.createElement("details");
     details.className = "food-category";
-    details.open = Boolean(modalSearchTerm);
+    details.open = false;
 
     const summary = document.createElement("summary");
     summary.className = "food-category-summary";
-    summary.textContent = `${category}(${categoryFoods.length})`;
+    summary.textContent = `${category}(${items.length})`;
     details.append(summary);
 
     const grid = document.createElement("div");
     grid.className = "food-grid";
 
-    categoryFoods.forEach((food) => {
+    items.forEach((group) => {
       const button = document.createElement("button");
       button.type = "button";
       button.className = "food-button";
-      button.textContent = food.name;
-      button.addEventListener("click", () => selectFoodFromMaster(food.name));
+      button.textContent = group.displayGroup;
+      button.addEventListener("click", () => {
+        if (group.names.length > 1) {
+          concentrationPickerGroup = group;
+          renderFoodSearchModalList();
+        } else {
+          selectFoodFromMaster(group.names[0]);
+        }
+      });
       grid.append(button);
     });
 
@@ -447,6 +546,7 @@ async function loadFoodMasterIfNeeded() {
 function openFoodSearchModal() {
   foodSearchModal.hidden = false;
   modalSearchTerm = "";
+  concentrationPickerGroup = null;
   foodSearchModalInput.value = "";
   loadFoodMasterIfNeeded().then(() => {
     if (foodMasterLoaded) {
@@ -458,6 +558,7 @@ function openFoodSearchModal() {
 
 function closeFoodSearchModal() {
   foodSearchModal.hidden = true;
+  concentrationPickerGroup = null;
 }
 
 openFoodSearchButton.addEventListener("click", openFoodSearchModal);
