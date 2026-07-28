@@ -1,9 +1,8 @@
-import { addFood, addRecord, getFoodInfo, getFoodList, getFoodMaster, getInstaRecords, getSettings } from "./api.js";
+import { addFood, addRecord, getFoodList, getFoodMaster, getInstaRecords, getSettings } from "./api.js";
 
 const CATEGORY_ORDER = ["炭水化物", "野菜", "果物", "タンパク質", "乳製品", "その他"];
 
 const foodButtons = document.querySelector("#food-buttons");
-const foodInfoPanel = document.querySelector("#food-info-panel");
 const openFoodSearchButton = document.querySelector("#open-food-search-button");
 const openFoodHistoryButton = document.querySelector("#open-food-history-button");
 const form = document.querySelector("#record-form");
@@ -34,7 +33,6 @@ let selectedFood = "";
 let selectedMealType = "";
 let selectedReaction = "";
 let messageTimer;
-let foodInfoRequestId = 0;
 
 let foodMaster = []; // [{ name, category, displayGroup }] (食材を探すモーダル用)
 let foodMasterLoaded = false;
@@ -138,84 +136,9 @@ async function loadTodayFoods() {
   }
 }
 
-async function selectFood(foodName) {
-  try {
-    if (!recordedFoods.includes(foodName)) {
-      await addFood(foodName);
-      recordedFoods = normalizeFoods([...recordedFoods, foodName]);
-    }
-  } catch (error) {
-    console.warn(error);
-  }
+function selectFood(foodName) {
   selectedFood = foodName;
   renderTodayFoods();
-  loadFoodInfo(foodName);
-}
-
-function hideFoodInfo() {
-  foodInfoRequestId += 1;
-  foodInfoPanel.hidden = true;
-  foodInfoPanel.innerHTML = "";
-}
-
-function renderFoodInfoList(title, items) {
-  if (!Array.isArray(items) || items.length === 0) {
-    return `
-      <section class="food-info-section">
-        <h4>${title}</h4>
-        <p class="food-info-empty">登録された情報はまだありません。</p>
-      </section>
-    `;
-  }
-
-  const listItems = items.map((item) => {
-    const source = item.source ? ` <span class="food-info-source">${escapeHtml(item.source)}</span>` : "";
-    return `<li>${escapeHtml(item.text)}${source}</li>`;
-  }).join("");
-
-  return `
-    <section class="food-info-section">
-      <h4>${title}</h4>
-      <ul>${listItems}</ul>
-    </section>
-  `;
-}
-
-async function loadFoodInfo(foodName) {
-  const requestId = foodInfoRequestId + 1;
-  foodInfoRequestId = requestId;
-  foodInfoPanel.hidden = false;
-  foodInfoPanel.innerHTML = `<p class="food-info-loading">${escapeHtml(foodName)} の情報を読み込んでいます...</p>`;
-
-  try {
-    const data = await getFoodInfo(foodName);
-
-    if (requestId !== foodInfoRequestId || selectedFood !== foodName) {
-      return;
-    }
-
-    foodInfoPanel.innerHTML = `
-      <div class="food-info-heading">
-        <h3>${escapeHtml(foodName)} のメモ</h3>
-        <p>注意点が複数ある場合は箇条書きで表示します。</p>
-      </div>
-      ${renderFoodInfoList("注意点", data.cautions)}
-      ${renderFoodInfoList("調理法", data.cookingMethods)}
-    `;
-  } catch (error) {
-    console.warn(error);
-
-    if (requestId !== foodInfoRequestId || selectedFood !== foodName) {
-      return;
-    }
-
-    foodInfoPanel.innerHTML = `
-      <div class="food-info-heading">
-        <h3>${escapeHtml(foodName)} のメモ</h3>
-        <p class="food-info-empty">注意点・調理法を取得できませんでした。</p>
-      </div>
-    `;
-  }
 }
 
 function renderMealTypes() {
@@ -239,7 +162,6 @@ function resetForm() {
   selectedReaction = "";
   dateTimeInput.value = formatDateTimeLocal();
   renderTodayFoods();
-  hideFoodInfo();
   renderMealTypes();
   renderReactions();
 }
@@ -295,10 +217,6 @@ function renderFoodHistoryModalList() {
 }
 
 async function loadRecordedFoodsIfNeeded() {
-  if (recordedFoods.length > 0) {
-    renderFoodHistoryModalList();
-    return;
-  }
   foodHistoryModalList.innerHTML = `<p class="food-info-loading">履歴を読み込んでいます...</p>`;
 
   try {
@@ -396,15 +314,10 @@ function getFilteredFoodMaster() {
   return foodMaster.filter((food) => food.name.includes(modalSearchTerm));
 }
 
-async function selectFoodFromMaster(foodName) {
-  try {
-    await selectFood(foodName);
-    concentrationPickerGroup = null;
-    closeFoodSearchModal();
-  } catch (error) {
-    console.error(error);
-    showMessage("食材の選択に失敗しました。時間をおいて再度お試しください。", "error");
-  }
+function selectFoodFromMaster(foodName) {
+  selectFood(foodName);
+  concentrationPickerGroup = null;
+  closeFoodSearchModal();
 }
 
 function renderConcentrationPicker() {
