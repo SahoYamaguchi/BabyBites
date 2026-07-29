@@ -3,6 +3,7 @@ import { addFood, addRecord, getFoodList, getFoodMaster, getInstaRecords, getSet
 const CATEGORY_ORDER = ["炭水化物", "野菜", "果物", "タンパク質", "乳製品", "その他"];
 
 const foodButtons = document.querySelector("#food-buttons");
+const selectedFoodDisplay = document.querySelector("#selected-food-display");
 const openFoodSearchButton = document.querySelector("#open-food-search-button");
 const openFoodHistoryButton = document.querySelector("#open-food-history-button");
 const form = document.querySelector("#record-form");
@@ -136,9 +137,20 @@ async function loadTodayFoods() {
   }
 }
 
+function renderSelectedFoodDisplay() {
+  if (!selectedFood) {
+    selectedFoodDisplay.hidden = true;
+    selectedFoodDisplay.textContent = "";
+    return;
+  }
+  selectedFoodDisplay.hidden = false;
+  selectedFoodDisplay.textContent = `選択中の食材: ${selectedFood}`;
+}
+
 function selectFood(foodName) {
   selectedFood = foodName;
   renderTodayFoods();
+  renderSelectedFoodDisplay();
 }
 
 // 選んだ食材の表示グループに複数の食材名(お粥の濃度違いなど)がある場合は、
@@ -185,6 +197,7 @@ function resetForm() {
   selectedReaction = "";
   dateTimeInput.value = formatDateTimeLocal();
   renderTodayFoods();
+  renderSelectedFoodDisplay();
   renderMealTypes();
   renderReactions();
 }
