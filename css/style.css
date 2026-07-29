@@ -710,3 +710,12 @@ textarea {
 .food-picker-back-button {
   margin-bottom: 10px;
 }
+
+.selected-food-display {
+  margin-top: 10px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  background: var(--primary-soft);
+  color: var(--primary-dark);
+  font-weight: 700;
+}
