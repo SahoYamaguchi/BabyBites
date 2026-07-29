@@ -343,8 +343,15 @@ function selectFoodFromMaster(foodName) {
   closeFoodSearchModal();
 }
 
+// 表示グループのラベルとしては使うが、記録する具体的な食材としては
+// 曖昧すぎるため濃度選択の候補からは除外したい食材名
+const PICKER_EXCLUDED_NAMES = new Set(["つぶし粥"]);
+
 function renderConcentrationPicker() {
   const { displayGroup, names } = concentrationPickerGroup;
+  const selectableNames = names.filter((name) => !PICKER_EXCLUDED_NAMES.has(name));
+  const namesToShow = selectableNames.length > 0 ? selectableNames : names;
+
   foodSearchModalList.innerHTML = "";
 
   const backButton = document.createElement("button");
@@ -365,7 +372,7 @@ function renderConcentrationPicker() {
   const grid = document.createElement("div");
   grid.className = "food-grid";
 
-  names.forEach((name) => {
+  namesToShow.forEach((name) => {
     const button = document.createElement("button");
     button.type = "button";
     button.className = "food-button";
