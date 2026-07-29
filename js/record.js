@@ -101,7 +101,7 @@ function renderTodayFoods() {
     button.setAttribute("aria-pressed", String(food === selectedFood));
 
     button.addEventListener("click", () => {
-      selectFood(food);
+      handleFoodSelection(food);
     });
 
     foodButtons.append(button);
@@ -139,6 +139,29 @@ async function loadTodayFoods() {
 function selectFood(foodName) {
   selectedFood = foodName;
   renderTodayFoods();
+}
+
+// 選んだ食材の表示グループに複数の食材名(お粥の濃度違いなど)がある場合は、
+// 「食材を探す」モーダルを濃度選択画面として開く。なければそのまま選択する。
+function handleFoodSelection(foodName) {
+  const entry = foodMaster.find((food) => food.name === foodName);
+
+  if (entry) {
+    const groupNames = foodMaster
+      .filter((food) => food.displayGroup === entry.displayGroup)
+      .map((food) => food.name);
+
+    if (groupNames.length > 1) {
+      concentrationPickerGroup = { displayGroup: entry.displayGroup, names: groupNames };
+      modalSearchTerm = "";
+      foodSearchModalInput.value = "";
+      foodSearchModal.hidden = false;
+      renderFoodSearchModalList();
+      return;
+    }
+  }
+
+  selectFood(foodName);
 }
 
 function renderMealTypes() {
@@ -209,8 +232,8 @@ function renderFoodHistoryModalList() {
     button.className = "food-button";
     button.textContent = food;
     button.addEventListener("click", () => {
-      selectFood(food);
       closeFoodHistoryModal();
+      handleFoodSelection(food);
     });
     foodHistoryModalList.append(button);
   });
@@ -443,16 +466,22 @@ async function loadFoodMasterIfNeeded() {
   if (foodMasterLoaded) {
     return;
   }
-  foodSearchModalList.innerHTML = `<p class="food-info-loading">食材マスタを読み込んでいます...</p>`;
+  if (!foodSearchModal.hidden) {
+    foodSearchModalList.innerHTML = `<p class="food-info-loading">食材マスタを読み込んでいます...</p>`;
+  }
 
   try {
     const data = await getFoodMaster();
     foodMaster = normalizeFoodMaster(Array.isArray(data.foods) ? data.foods : []);
     foodMasterLoaded = true;
-    renderFoodSearchModalList();
+    if (!foodSearchModal.hidden) {
+      renderFoodSearchModalList();
+    }
   } catch (error) {
     console.warn(error);
-    foodSearchModalList.innerHTML = `<p class="food-info-empty">食材マスタの取得に失敗しました。時間をおいて再度お試しください。</p>`;
+    if (!foodSearchModal.hidden) {
+      foodSearchModalList.innerHTML = `<p class="food-info-empty">食材マスタの取得に失敗しました。時間をおいて再度お試しください。</p>`;
+    }
   }
 }
 
@@ -545,3 +574,4 @@ dateTimeInput.value = formatDateTimeLocal();
 renderMealTypes();
 renderReactions();
 loadTodayFoods();
+loadFoodMasterIfNeeded();
