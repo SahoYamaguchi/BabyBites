@@ -85,3 +85,7 @@ export function getInstaRecords({ week, day, keyword } = {}) {
 export function getNutrientStatus({ period, date } = {}) {
   return requestJson(buildApiUrl("getNutrientStatus", { period, date }));
 }
+
+export function getRecipes({ week, day, keyword } = {}) {
+  return requestJson(buildApiUrl("getRecipes", { week, day, keyword }));
+}
