@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>BabyBites - レシピ</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <div>
+        <p class="eyebrow">BabyBites</p>
+        <h1>レシピ</h1>
+      </div>
+      <nav class="nav-links" aria-label="画面切り替え">
+        <a href="index.html">入力</a>
+        <a href="history.html">履歴</a>
+        <a href="foods.html">図鑑</a>
+        <a href="insta.html">投稿</a>
+        <a href="nutrition.html">栄養素</a>
+        <a aria-current="page" href="recipe.html">レシピ</a>
+        <a href="settings.html">設定</a>
+      </nav>
+    </header>
+
+    <main class="container">
+      <section class="card" aria-labelledby="recipe-heading">
+        <div class="section-title-row">
+          <h2 id="recipe-heading">レシピ一覧</h2>
+        </div>
+
+        <div class="field-group" id="week-nav">
+          <span class="field-label">表示する週</span>
+          <div class="week-selector">
+            <button class="secondary-button" id="prev-week-button" type="button" aria-label="前の週">◀</button>
+            <span class="week-label" id="current-week-label">-</span>
+            <button class="secondary-button" id="next-week-button" type="button" aria-label="次の週">▶</button>
+          </div>
+        </div>
+
+        <label class="field-group" for="recipe-search">
+          <span class="field-label">レシピ名・材料・食材で検索</span>
+          <input id="recipe-search" type="search" placeholder="例: かぼちゃ" autocomplete="off" />
+        </label>
+
+        <div class="recipe-list" id="recipe-list" aria-live="polite"></div>
+      </section>
+    </main>
+
+    <script type="module" src="js/recipe.js"></script>
+  </body>
+</html>
