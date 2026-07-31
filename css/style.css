@@ -719,3 +719,60 @@ textarea {
   color: var(--primary-dark);
   font-weight: 700;
 }
+
+.recipe-list {
+  display: grid;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.recipe-item {
+  border-left: 5px solid var(--primary-soft);
+  border-radius: 14px;
+  padding: 12px;
+  background: #fffdf9;
+}
+
+.recipe-item-meta {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  margin-bottom: 6px;
+}
+
+.recipe-item-day {
+  font-weight: 700;
+  color: var(--primary-dark);
+}
+
+.recipe-item-meal {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.recipe-item-name {
+  font-size: 1.05rem;
+  margin-bottom: 6px;
+}
+
+.recipe-item-ingredients {
+  color: var(--text);
+  margin-bottom: 8px;
+  white-space: pre-wrap;
+}
+
+.recipe-item-used-foods {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.recipe-food-tag {
+  display: inline-block;
+  border-radius: 999px;
+  padding: 4px 10px;
+  background: var(--primary-soft);
+  color: var(--primary-dark);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
