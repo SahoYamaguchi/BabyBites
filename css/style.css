@@ -776,3 +776,39 @@ textarea {
   font-size: 0.82rem;
   font-weight: 700;
 }
+
+html, body {
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
+.container,
+.app-header,
+.card,
+.modal-card {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* grid/flexの子要素は、デフォルトで長いテキストがあっても縮まず横にはみ出すため、
+   min-width: 0 を指定して折り返しを優先させる */
+.food-grid > *,
+.history-item-main > *,
+.nutrient-grid > *,
+.recipe-item,
+.insta-record-item,
+.meal-type-grid > *,
+.reaction-grid > *,
+.toggle-group > * {
+  min-width: 0;
+}
+
+/* URLや長い単語がある要素は強制的に折り返す */
+.food-info-source,
+.insta-record-summary,
+.recipe-item-ingredients,
+.history-memo,
+.helper-text {
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
