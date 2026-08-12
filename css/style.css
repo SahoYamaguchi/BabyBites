@@ -72,24 +72,6 @@ h1 {
   line-height: 1.2;
 }
 
-.nav-links {
-  display: flex;
-  gap: 8px;
-  flex-shrink: 0;
-}
-
-.nav-links a {
-  min-width: 64px;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  padding: 10px 14px;
-  background: var(--card);
-  color: var(--text);
-  font-weight: 700;
-  text-align: center;
-  text-decoration: none;
-}
-
 .nav-links a[aria-current="page"] {
   border-color: var(--primary);
   background: var(--primary-soft);
@@ -357,15 +339,6 @@ textarea {
     align-items: flex-start;
     flex-direction: column;
   }
-
-  .nav-links {
-    width: 100%;
-  }
-
-  .nav-links a {
-    flex: 1;
-  }
-
   .card {
     padding: 16px;
   }
