@@ -89,3 +89,17 @@ export function getNutrientStatus({ period, date } = {}) {
 export function getRecipes({ week, day, keyword } = {}) {
   return requestJson(buildApiUrl("getRecipes", { week, day, keyword }));
 }
+
+
+export function addMasterFood({ name, category }) {
+  return requestJson(buildApiUrl("addMasterFood", { name, category }));
+}
+ 
+export function addRecords({ date, mealType, reaction, memo, items }) {
+  return requestJson(buildApiUrl("addRecords", { date, mealType, reaction, memo, items }));
+}
+ 
+export function getDailyEnergy({ days, date } = {}) {
+  return requestJson(buildApiUrl("getDailyEnergy", { days, date }));
+}
+ 
