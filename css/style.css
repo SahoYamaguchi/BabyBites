@@ -805,3 +805,40 @@ html, body {
   text-decoration: none;
   white-space: nowrap;
 }
+
+.item-list { display: grid; gap: 12px; }
+.item-row { border: 1px solid #e6e3dc; border-radius: 12px; padding: 12px; display: grid; gap: 8px; background: #fff; }
+.item-row-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.item-row-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.item-row-fields select:last-child { grid-column: 1 / -1; }
+.item-row-fields select, .item-row-fields input { min-width: 0; width: 100%; }
+.item-remove-button { border: none; background: transparent; font-size: 20px; line-height: 1; padding: 4px 10px; cursor: pointer; color: inherit; }
+ 
+.quick-add { border: 1px dashed #cfcbc2; border-radius: 12px; padding: 10px 12px; margin-bottom: 16px; }
+.quick-add summary { cursor: pointer; font-weight: 600; }
+.quick-add-fields { display: grid; gap: 12px; margin-top: 12px; }
+ 
+.energy-chart { margin-top: 16px; transition: opacity 0.15s; }
+.energy-chart-plot { position: relative; }
+.energy-svg { display: block; width: 100%; height: auto; overflow: visible; }
+.energy-svg .chart-grid { stroke: #e6e3dc; stroke-width: 1; }
+.energy-svg .chart-axis-text { fill: #6b6a66; font-size: 11px; }
+.energy-svg .chart-line { stroke: #2a78d6; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.energy-svg .chart-dot { fill: #2a78d6; stroke: #fcfcfb; stroke-width: 2; }
+.energy-svg .chart-target-line { stroke: #8a8984; stroke-width: 1; }
+.energy-svg .chart-crosshair { stroke: #8a8984; stroke-width: 1; }
+.chart-tooltip { position: absolute; top: 0; transform: translateX(-50%); background: #fff; border: 1px solid #e6e3dc; border-radius: 8px; padding: 6px 10px; font-size: 12px; pointer-events: none; box-shadow: 0 2px 8px rgba(0,0,0,.08); white-space: nowrap; }
+.chart-tooltip-value { font-weight: 700; font-size: 14px; }
+.chart-tooltip-date { color: #6b6a66; }
+.chart-table-view { margin-top: 8px; }
+.chart-table-view summary { cursor: pointer; }
+.chart-table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 14px; }
+.chart-table th, .chart-table td { text-align: left; padding: 6px 8px; border-bottom: 1px solid #e6e3dc; }
+ 
+@media (prefers-color-scheme: dark) {
+  .energy-svg .chart-grid { stroke: #383835; }
+  .energy-svg .chart-axis-text { fill: #c3c2b7; }
+  .energy-svg .chart-line, .energy-svg .chart-dot { stroke: #3987e5; }
+  .energy-svg .chart-dot { fill: #3987e5; stroke: #1a1a19; }
+  .item-row, .chart-tooltip { background: #1a1a19; border-color: #383835; }
+}
