@@ -18,7 +18,6 @@
         <a href="foods.html">図鑑</a>
         <a href="insta.html">投稿</a>
         <a href="nutrition.html">栄養素</a>
-        <a href="recipe.html">レシピ</a>
         <a href="settings.html">設定</a>
       </nav>
     </header>
@@ -32,54 +31,15 @@
             <button class="secondary-button" id="open-food-search-button" type="button">食材を探す</button>
           </div>
         </div>
-        <p class="helper-text">今日の投稿でよく出てくる食材です。</p>
+        <p class="helper-text">今日の投稿でよく出てくる食材です。タップで追加、もう一度タップで外せます。</p>
         <div class="food-grid" id="food-buttons" aria-live="polite"></div>
-        <p class="selected-food-display" id="selected-food-display" aria-live="polite" hidden></p>
       </section>
 
       <form class="card record-form" id="record-form">
-        <p class="helper-text">グラム数かさじ杯数のどちらかを入力してください(両方入力した場合はグラム数を使用します)。</p>
-
-        <label class="field-group" for="spoon-count">
-          <span class="field-label">さじ何杯分</span>
-          <select id="spoon-count" name="spoonCount">
-            <option value="">未選択</option>
-            <option value="0.5">0.5杯</option>
-            <option value="1">1杯</option>
-            <option value="1.5">1.5杯</option>
-            <option value="2">2杯</option>
-            <option value="2.5">2.5杯</option>
-            <option value="3">3杯</option>
-            <option value="3.5">3.5杯</option>
-            <option value="4">4杯</option>
-          </select>
-        </label>
-
-        <label class="field-group" for="amount-gram">
-          <span class="field-label">グラム数</span>
-          <input id="amount-gram" name="amountGram" type="number" inputmode="decimal" min="0" step="0.1" placeholder="例: 15" />
-        </label>
-
         <div class="field-group">
-          <span class="field-label">実際に食べた割合</span>
-          <div class="toggle-group" role="radiogroup" aria-label="食べた割合を選択">
-            <label class="toggle-option">
-              <input type="radio" name="amountLabel" value="20%" />
-              <span>20%</span>
-            </label>
-            <label class="toggle-option">
-              <input type="radio" name="amountLabel" value="50%" />
-              <span>50%</span>
-            </label>
-            <label class="toggle-option">
-              <input type="radio" name="amountLabel" value="80%" />
-              <span>80%</span>
-            </label>
-            <label class="toggle-option">
-              <input type="radio" name="amountLabel" value="100%" checked />
-              <span>100%</span>
-            </label>
-          </div>
+          <span class="field-label">記録する食材</span>
+          <p class="helper-text">上の「今日の食材」「履歴」「食材を探す」から選ぶと、ここに追加されます。複数選べます。グラム数かさじ杯数のどちらかを入力してください(両方入力した場合はグラム数を使用します)。</p>
+          <div class="item-list" id="selected-items" aria-live="polite"></div>
         </div>
 
         <div class="field-group">
@@ -147,6 +107,29 @@
           <span class="field-label">食材を検索</span>
           <input id="food-search-modal-input" type="search" placeholder="例: しらす" autocomplete="off" />
         </label>
+        <details class="quick-add" id="quick-add">
+          <summary>＋ 新しい食材を追加(まだ食べたことがない食材)</summary>
+          <div class="quick-add-fields">
+            <label class="field-group" for="quick-add-name">
+              <span class="field-label">食材名</span>
+              <input id="quick-add-name" type="text" placeholder="例: あんこ" autocomplete="off" />
+            </label>
+            <label class="field-group" for="quick-add-category">
+              <span class="field-label">カテゴリ</span>
+              <select id="quick-add-category">
+                <option value="炭水化物">炭水化物</option>
+                <option value="野菜">野菜</option>
+                <option value="果物">果物</option>
+                <option value="タンパク質">タンパク質</option>
+                <option value="乳製品">乳製品</option>
+                <option value="その他" selected>その他</option>
+              </select>
+            </label>
+            <button class="secondary-button" id="quick-add-button" type="button">追加して選ぶ</button>
+            <p class="helper-text" id="quick-add-status" role="status"></p>
+            <p class="helper-text">栄養素は登録されないため、栄養素チェックの集計には含まれません。</p>
+          </div>
+        </details>
         <div class="food-category-list" id="food-search-modal-list" aria-live="polite"></div>
       </div>
     </div>
