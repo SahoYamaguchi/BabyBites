@@ -1,6 +1,6 @@
 import { getFoodInfo, getFoodMaster } from "./api.js";
 
-const CATEGORY_ORDER = ["炭水化物", "野菜", "果物", "タンパク質", "乳製品", "その他"];
+const CATEGORY_ORDER = ["炭水化物", "野菜", "果物", "タンパク質", "乳製品", "ベビーフード", "その他"];
 
 const foodButtons = document.querySelector("#food-buttons");
 const foodInfoPanel = document.querySelector("#food-info-panel");
