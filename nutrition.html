@@ -18,7 +18,6 @@
         <a href="foods.html">図鑑</a>
         <a href="insta.html">投稿</a>
         <a aria-current="page" href="nutrition.html">栄養素</a>
-        <a href="recipe.html">レシピ</a>
         <a href="settings.html">設定</a>
       </nav>
     </header>
@@ -41,6 +40,29 @@
         </div>
 
         <div class="nutrition-status" id="nutrition-status" aria-live="polite"></div>
+      </section>
+
+      <section class="card" aria-labelledby="energy-trend-heading">
+        <div class="section-title-row">
+          <h2 id="energy-trend-heading">1日の摂取カロリーの推移</h2>
+        </div>
+
+        <div class="toggle-group" id="trend-range-toggle" role="radiogroup" aria-label="表示する日数を選択">
+          <label class="toggle-option">
+            <input type="radio" name="trend-range" value="7" />
+            <span>7日</span>
+          </label>
+          <label class="toggle-option">
+            <input type="radio" name="trend-range" value="14" checked />
+            <span>14日</span>
+          </label>
+          <label class="toggle-option">
+            <input type="radio" name="trend-range" value="30" />
+            <span>30日</span>
+          </label>
+        </div>
+
+        <div class="energy-chart" id="energy-chart" aria-live="polite"></div>
       </section>
     </main>
 
