@@ -25,20 +25,19 @@
     <main class="container">
       <section class="card" aria-labelledby="food-heading">
         <div class="section-title-row">
-          <h2 id="food-heading">今日の食材</h2>
+          <h2 id="food-heading">食材を選ぶ</h2>
           <div class="food-heading-actions">
             <button class="secondary-button" id="open-food-history-button" type="button">履歴</button>
             <button class="secondary-button" id="open-food-search-button" type="button">食材を探す</button>
           </div>
         </div>
-        <p class="helper-text">今日の投稿でよく出てくる食材です。タップで追加、もう一度タップで外せます。</p>
-        <div class="food-grid" id="food-buttons" aria-live="polite"></div>
+        <p class="helper-text">「履歴」か「食材を探す」から選びます。「食材を探す」では複数まとめて選べます。</p>
       </section>
 
       <form class="card record-form" id="record-form">
         <div class="field-group">
           <span class="field-label">記録する食材</span>
-          <p class="helper-text">上の「今日の食材」「履歴」「食材を探す」から選ぶと、ここに追加されます。複数選べます。グラム数かさじ杯数のどちらかを入力してください(両方入力した場合はグラム数を使用します)。</p>
+          <p class="helper-text">上の「履歴」「食材を探す」から選ぶと、ここに追加されます。複数選べます。グラム数かさじ杯数のどちらかを入力してください(両方入力した場合はグラム数を使用します)。</p>
           <div class="item-list" id="selected-items" aria-live="polite"></div>
         </div>
 
@@ -122,7 +121,6 @@
                 <option value="果物">果物</option>
                 <option value="タンパク質">タンパク質</option>
                 <option value="乳製品">乳製品</option>
-                <option value="ベビーフード">ベビーフード</option>
                 <option value="その他" selected>その他</option>
               </select>
             </label>
@@ -132,6 +130,9 @@
           </div>
         </details>
         <div class="food-category-list" id="food-search-modal-list" aria-live="polite"></div>
+        <div class="modal-done-bar">
+          <button class="primary-button" id="food-search-modal-done" type="button">完了</button>
+        </div>
       </div>
     </div>
 
