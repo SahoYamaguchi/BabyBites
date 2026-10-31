@@ -189,7 +189,7 @@ function renderSelectedItems() {
     gramInput.type = "number";
     gramInput.inputMode = "decimal";
     gramInput.min = "0";
-    gramInput.step = "0.1";
+    gramInput.step = "any";
     gramInput.placeholder = "g";
     gramInput.setAttribute("aria-label", `${item.foodName}のグラム数`);
     gramInput.value = item.gram;
