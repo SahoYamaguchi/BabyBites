@@ -1,8 +1,7 @@
-import { addMasterFood, addRecords, getFoodList, getFoodMaster, getInstaRecords, getSettings } from "./api.js";
+import { addMasterFood, addRecords, getFoodList, getFoodMaster } from "./api.js";
 
-const CATEGORY_ORDER = ["炭水化物", "野菜", "果物", "タンパク質", "乳製品", "ベビーフード", "その他"];
+const CATEGORY_ORDER = ["炭水化物", "野菜", "果物", "タンパク質", "乳製品", "その他"];
 
-const foodButtons = document.querySelector("#food-buttons");
 const selectedItemsEl = document.querySelector("#selected-items");
 const openFoodSearchButton = document.querySelector("#open-food-search-button");
 const openFoodHistoryButton = document.querySelector("#open-food-history-button");
@@ -20,6 +19,7 @@ const foodSearchModal = document.querySelector("#food-search-modal");
 const foodSearchModalClose = document.querySelector("#food-search-modal-close");
 const foodSearchModalInput = document.querySelector("#food-search-modal-input");
 const foodSearchModalList = document.querySelector("#food-search-modal-list");
+const foodSearchModalDone = document.querySelector("#food-search-modal-done");
 
 const foodHistoryModal = document.querySelector("#food-history-modal");
 const foodHistoryModalClose = document.querySelector("#food-history-modal-close");
@@ -32,7 +32,6 @@ const quickAddCategory = document.querySelector("#quick-add-category");
 const quickAddButton = document.querySelector("#quick-add-button");
 const quickAddStatus = document.querySelector("#quick-add-status");
 
-let todayFoods = []; // 今日のインスタ投稿から抽出した食材
 let recordedFoods = []; // これまで記録した食材(履歴モーダル用)
 let selectedItems = []; // [{ foodName, spoon, gram, ratio }] まとめて記録する食材
 let selectedMealType = "";
@@ -72,73 +71,6 @@ function escapeHtml(value) {
     const entities = { "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" };
     return entities[character];
   });
-}
-
-// ----- 今日の食材(1st view) -----
-
-function calculateCurrentDay(startDateStr) {
-  if (!startDateStr) {
-    return null;
-  }
-  const start = new Date(`${startDateStr}T00:00:00`);
-  const today = new Date();
-  const diffDays = Math.floor((today.setHours(0, 0, 0, 0) - start.setHours(0, 0, 0, 0)) / 86_400_000);
-  const dayNumber = diffDays + 1;
-  return dayNumber < 1 ? null : dayNumber;
-}
-
-function renderTodayFoods() {
-  foodButtons.innerHTML = "";
-
-  if (todayFoods.length === 0) {
-    const emptyMessage = document.createElement("p");
-    emptyMessage.className = "food-info-empty";
-    emptyMessage.textContent = "今日に該当する投稿の食材が見つかりません。「履歴」か「食材を探す」から選んでください。";
-    foodButtons.append(emptyMessage);
-    return;
-  }
-
-  todayFoods.forEach((food) => {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "food-button";
-    button.textContent = food;
-    button.setAttribute("aria-pressed", String(hasItem(food)));
-
-    button.addEventListener("click", () => {
-      handleFoodSelection(food, { toggle: true });
-    });
-
-    foodButtons.append(button);
-  });
-}
-
-async function loadTodayFoods() {
-  foodButtons.innerHTML = `<p class="food-info-loading">今日の食材を読み込んでいます...</p>`;
-
-  try {
-    const settingsData = await getSettings();
-    const startDate = settingsData.settings?.["開始日"] || "";
-    const currentDay = calculateCurrentDay(startDate);
-
-    if (!currentDay) {
-      todayFoods = [];
-      renderTodayFoods();
-      return;
-    }
-
-    const data = await getInstaRecords({ day: currentDay });
-    const usedFoodsSet = new Set();
-    (data.records || []).forEach((record) => {
-      (record.usedFoods || []).forEach((food) => usedFoodsSet.add(food));
-    });
-    todayFoods = [...usedFoodsSet];
-    renderTodayFoods();
-  } catch (error) {
-    console.warn(error);
-    todayFoods = [];
-    renderTodayFoods();
-  }
 }
 
 const RATIO_OPTIONS = ["20%", "50%", "80%", "100%"];
@@ -189,7 +121,7 @@ function renderSelectedItems() {
     gramInput.type = "number";
     gramInput.inputMode = "decimal";
     gramInput.min = "0";
-    gramInput.step = "any";
+    gramInput.step = "0.1";
     gramInput.placeholder = "g";
     gramInput.setAttribute("aria-label", `${item.foodName}のグラム数`);
     gramInput.value = item.gram;
@@ -212,13 +144,11 @@ function addItem(foodName) {
     return;
   }
   selectedItems.push({ foodName, spoon: "", gram: "", ratio: "100%" });
-  renderTodayFoods();
   renderSelectedItems();
 }
 
 function removeItem(foodName) {
   selectedItems = selectedItems.filter((item) => item.foodName !== foodName);
-  renderTodayFoods();
   renderSelectedItems();
 }
 
@@ -229,13 +159,7 @@ function selectFood(foodName) {
 
 // 選んだ食材の表示グループに複数の食材名(お粥の濃度違いなど)がある場合は、
 // 「食材を探す」モーダルを濃度選択画面として開く。なければそのまま追加する。
-// toggle: true のとき(今日の食材ボタン)は、追加済みの食材をもう一度押すと外す。
-function handleFoodSelection(foodName, { toggle = false } = {}) {
-  if (toggle && hasItem(foodName)) {
-    removeItem(foodName);
-    return;
-  }
-
+function handleFoodSelection(foodName) {
   const entry = foodMaster.find((food) => food.name === foodName);
 
   if (entry) {
@@ -276,7 +200,6 @@ function resetForm() {
   selectedMealType = "";
   selectedReaction = "";
   dateTimeInput.value = formatDateTimeLocal();
-  renderTodayFoods();
   renderSelectedItems();
   renderMealTypes();
   renderReactions();
@@ -430,10 +353,34 @@ function getFilteredFoodMaster() {
   return foodMaster.filter((food) => food.name.includes(modalSearchTerm));
 }
 
-function selectFoodFromMaster(foodName) {
-  selectFood(foodName);
-  concentrationPickerGroup = null;
-  closeFoodSearchModal();
+// 「食べ物を探す」モーダルは複数選択できる。押すと追加、もう一度押すと外す。
+// モーダルは閉じず、「完了」ボタンか×で閉じる。
+function toggleFoodFromMaster(foodName) {
+  if (hasItem(foodName)) {
+    removeItem(foodName);
+  } else {
+    selectFood(foodName);
+  }
+  refreshModalSelectionState();
+}
+
+function refreshModalSelectionState() {
+  foodSearchModalList.querySelectorAll("button[data-names]").forEach((button) => {
+    const names = JSON.parse(button.dataset.names);
+    button.setAttribute("aria-pressed", String(names.some((name) => hasItem(name))));
+  });
+  foodSearchModalDone.textContent = selectedItems.length > 0 ? `完了(${selectedItems.length}件選択中)` : "完了";
+}
+
+function createMasterButton(label, names, onClick) {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "food-button";
+  button.textContent = label;
+  button.dataset.names = JSON.stringify(names);
+  button.setAttribute("aria-pressed", String(names.some((name) => hasItem(name))));
+  button.addEventListener("click", onClick);
+  return button;
 }
 
 // 表示グループのラベルとしては使うが、記録する具体的な食材としては
@@ -466,15 +413,11 @@ function renderConcentrationPicker() {
   grid.className = "food-grid";
 
   namesToShow.forEach((name) => {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "food-button";
-    button.textContent = name;
-    button.addEventListener("click", () => selectFoodFromMaster(name));
-    grid.append(button);
+    grid.append(createMasterButton(name, [name], () => toggleFoodFromMaster(name)));
   });
 
   foodSearchModalList.append(grid);
+  refreshModalSelectionState();
 }
 
 function renderFoodSearchModalList() {
@@ -511,17 +454,13 @@ function renderFoodSearchModalList() {
       grid.className = "food-grid";
 
       items.forEach((food) => {
-        const button = document.createElement("button");
-        button.type = "button";
-        button.className = "food-button";
-        button.textContent = food.name;
-        button.addEventListener("click", () => selectFoodFromMaster(food.name));
-        grid.append(button);
+        grid.append(createMasterButton(food.name, [food.name], () => toggleFoodFromMaster(food.name)));
       });
 
       details.append(grid);
       foodSearchModalList.append(details);
     });
+    refreshModalSelectionState();
     return;
   }
 
@@ -542,24 +481,20 @@ function renderFoodSearchModalList() {
     grid.className = "food-grid";
 
     items.forEach((group) => {
-      const button = document.createElement("button");
-      button.type = "button";
-      button.className = "food-button";
-      button.textContent = group.displayGroup;
-      button.addEventListener("click", () => {
+      grid.append(createMasterButton(group.displayGroup, group.names, () => {
         if (group.names.length > 1) {
           concentrationPickerGroup = group;
           renderFoodSearchModalList();
         } else {
-          selectFoodFromMaster(group.names[0]);
+          toggleFoodFromMaster(group.names[0]);
         }
-      });
-      grid.append(button);
+      }));
     });
 
     details.append(grid);
     foodSearchModalList.append(details);
   });
+  refreshModalSelectionState();
 }
 
 async function loadFoodMasterIfNeeded() {
@@ -605,6 +540,7 @@ function closeFoodSearchModal() {
 
 openFoodSearchButton.addEventListener("click", openFoodSearchModal);
 foodSearchModalClose.addEventListener("click", closeFoodSearchModal);
+foodSearchModalDone.addEventListener("click", closeFoodSearchModal);
 foodSearchModal.addEventListener("click", (event) => {
   if (event.target === foodSearchModal) {
     closeFoodSearchModal();
@@ -651,7 +587,8 @@ quickAddButton.addEventListener("click", async () => {
     quickAddName.value = "";
     showQuickAddStatus("");
     quickAddDetails.open = false;
-    selectFoodFromMaster(addedName);
+    selectFood(addedName);
+    renderFoodSearchModalList();
     showMessage(
       data.added === false ? `「${addedName}」はすでに登録されているので、そのまま選びました。` : `「${addedName}」を食材マスタに追加しました。`,
       "success",
@@ -718,5 +655,4 @@ dateTimeInput.value = formatDateTimeLocal();
 renderMealTypes();
 renderReactions();
 renderSelectedItems();
-loadTodayFoods();
 loadFoodMasterIfNeeded();
