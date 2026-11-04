@@ -1,6 +1,14 @@
 import { getFoodInfo, getFoodMaster } from "./api.js";
 
-const CATEGORY_ORDER = ["炭水化物", "野菜", "果物", "タンパク質", "乳製品", "ベビーフード", "その他"];
+const CATEGORY_ORDER = [
+  "炭水化物",
+  "野菜",
+  "果物",
+  "タンパク質",
+  "乳製品",
+  "ベビーフード",
+  "その他",
+];
 
 const foodButtons = document.querySelector("#food-buttons");
 const foodInfoPanel = document.querySelector("#food-info-panel");
@@ -14,7 +22,13 @@ const openCategories = new Set();
 
 function escapeHtml(value) {
   return String(value).replace(/[&<>'"]/g, (character) => {
-    const entities = { "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" };
+    const entities = {
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      "'": "&#39;",
+      '"': "&quot;",
+    };
     return entities[character];
   });
 }
@@ -71,10 +85,15 @@ function groupByCategory(displayGroups) {
 
   const orderedCategories = [
     ...CATEGORY_ORDER.filter((category) => groups.has(category)),
-    ...[...groups.keys()].filter((category) => !CATEGORY_ORDER.includes(category)),
+    ...[...groups.keys()].filter(
+      (category) => !CATEGORY_ORDER.includes(category),
+    ),
   ];
 
-  return orderedCategories.map((category) => ({ category, groups: groups.get(category) }));
+  return orderedCategories.map((category) => ({
+    category,
+    groups: groups.get(category),
+  }));
 }
 
 function getFilteredDisplayGroups() {
@@ -83,8 +102,10 @@ function getFilteredDisplayGroups() {
     return displayGroups;
   }
   // 表示グループ名、またはグループ内のいずれかの食材名マスタに一致したら表示する
-  return displayGroups.filter((group) =>
-    group.displayGroup.includes(searchTerm) || group.names.some((name) => name.includes(searchTerm))
+  return displayGroups.filter(
+    (group) =>
+      group.displayGroup.includes(searchTerm) ||
+      group.names.some((name) => name.includes(searchTerm)),
   );
 }
 
@@ -128,7 +149,10 @@ function renderFoods() {
       button.type = "button";
       button.className = "food-button";
       button.textContent = group.displayGroup;
-      button.setAttribute("aria-pressed", String(group.displayGroup === selectedGroup));
+      button.setAttribute(
+        "aria-pressed",
+        String(group.displayGroup === selectedGroup),
+      );
 
       button.addEventListener("click", () => {
         selectedGroup = group.displayGroup;
@@ -168,12 +192,18 @@ function renderFoodInfoList(title, items, displayGroup) {
     `;
   }
 
-  const listItems = items.map((item) => {
-    const source = item.source ? ` <span class="food-info-source">${escapeHtml(item.source)}</span>` : "";
-    const showFoodName = item.foodName && item.foodName !== displayGroup;
-    const prefix = showFoodName ? `<strong class="food-info-item-name">${escapeHtml(item.foodName)}</strong>: ` : "";
-    return `<li>${prefix}${escapeHtml(item.text)}${source}</li>`;
-  }).join("");
+  const listItems = items
+    .map((item) => {
+      const source = item.source
+        ? ` <span class="food-info-source">${escapeHtml(item.source)}</span>`
+        : "";
+      const showFoodName = item.foodName && item.foodName !== displayGroup;
+      const prefix = showFoodName
+        ? `<strong class="food-info-item-name">${escapeHtml(item.foodName)}</strong>: `
+        : "";
+      return `<li>${prefix}${escapeHtml(item.text)}${source}</li>`;
+    })
+    .join("");
 
   return `
     <section class="food-info-section">
@@ -203,7 +233,9 @@ async function loadFoodInfo(displayGroup, foodNames) {
   foodInfoPanel.innerHTML = `<p class="food-info-loading">${escapeHtml(displayGroup)} の情報を読み込んでいます...</p>`;
 
   try {
-    const results = await Promise.all(foodNames.map((name) => getFoodInfo(name)));
+    const results = await Promise.all(
+      foodNames.map((name) => getFoodInfo(name)),
+    );
 
     if (requestId !== foodInfoRequestId || selectedGroup !== displayGroup) {
       return;
@@ -211,13 +243,20 @@ async function loadFoodInfo(displayGroup, foodNames) {
 
     const allCautions = dedupeInfoItems(
       results.flatMap((r, index) =>
-        (Array.isArray(r.cautions) ? r.cautions.map((item) => ({ ...item, foodName: foodNames[index] })) : [])
-      )
+        Array.isArray(r.cautions)
+          ? r.cautions.map((item) => ({ ...item, foodName: foodNames[index] }))
+          : [],
+      ),
     );
     const allCookingMethods = dedupeInfoItems(
       results.flatMap((r, index) =>
-        (Array.isArray(r.cookingMethods) ? r.cookingMethods.map((item) => ({ ...item, foodName: foodNames[index] })) : [])
-      )
+        Array.isArray(r.cookingMethods)
+          ? r.cookingMethods.map((item) => ({
+              ...item,
+              foodName: foodNames[index],
+            }))
+          : [],
+      ),
     );
 
     foodInfoPanel.innerHTML = `

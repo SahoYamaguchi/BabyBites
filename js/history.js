@@ -4,17 +4,30 @@ const historyList = document.querySelector("#history-list");
 const statusMessage = document.querySelector("#status-message");
 const reloadButton = document.querySelector("#reload-button");
 
+let allRecords = [];
+let searchTerm = "";
+
+// 食材名の検索欄を履歴リストの上に作る(history.html は変更不要)
+const searchField = document.createElement("label");
+searchField.className = "field-group";
+searchField.innerHTML = `
+  <span class="field-label">食材で検索</span>
+  <input id="history-search" type="search" placeholder="例: にんじん" autocomplete="off" />
+`;
+historyList.before(searchField);
+const searchInput = searchField.querySelector("input");
+
 const MEAL_TYPE_EMOJIS = {
-  "朝ごはん": "🌅",
-  "昼ごはん": "☀️",
-  "おやつ": "🍪",
-  "夜ごはん": "🌙",
+  朝ごはん: "🌅",
+  昼ごはん: "☀️",
+  おやつ: "🍪",
+  夜ごはん: "🌙",
 };
 
 const REACTION_EMOJIS = {
-  "美味しい": "😋",
-  "普通": "😐",
-  "いまいち": "😖",
+  美味しい: "😋",
+  普通: "😐",
+  いまいち: "😖",
 };
 
 function showMessage(message, type = "info") {
@@ -77,7 +90,13 @@ function groupRecordsByDate(records) {
 
 function escapeHtml(value) {
   return String(value).replace(/[&<>'"]/g, (character) => {
-    const entities = { "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" };
+    const entities = {
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      "'": "&#39;",
+      '"': "&quot;",
+    };
     return entities[character];
   });
 }
@@ -87,14 +106,26 @@ function createRecordItem(record) {
   item.className = "history-item";
 
   // index.htmlの入力順序(さじ→g→割合→反応→区分→メモ→日時)に合わせて表示する
-  const spoonText = record.spoonCount ? `さじ${escapeHtml(record.spoonCount)}杯` : "";
+  const spoonText = record.spoonCount
+    ? `さじ${escapeHtml(record.spoonCount)}杯`
+    : "";
   const gramText = record.amountGram ? `${escapeHtml(record.amountGram)}g` : "";
   const percentageText = formatPercentage(record.amountLabel);
-  const amountParts = [spoonText, gramText, percentageText].filter(Boolean);
+  const energyText =
+    typeof record.energy === "number" ? `約${record.energy}kcal` : "";
+  const amountParts = [spoonText, gramText, percentageText, energyText].filter(
+    Boolean,
+  );
 
-  const reactionDisplay = record.reaction ? (REACTION_EMOJIS[record.reaction] || escapeHtml(record.reaction)) : "";
-  const mealTypeDisplay = record.mealType ? (MEAL_TYPE_EMOJIS[record.mealType] || escapeHtml(record.mealType)) : "";
-  const memo = record.memo ? `<p class="history-memo">${escapeHtml(record.memo)}</p>` : "";
+  const reactionDisplay = record.reaction
+    ? REACTION_EMOJIS[record.reaction] || escapeHtml(record.reaction)
+    : "";
+  const mealTypeDisplay = record.mealType
+    ? MEAL_TYPE_EMOJIS[record.mealType] || escapeHtml(record.mealType)
+    : "";
+  const memo = record.memo
+    ? `<p class="history-memo">${escapeHtml(record.memo)}</p>`
+    : "";
 
   item.innerHTML = `
     <div class="history-item-main">
@@ -116,7 +147,9 @@ function renderHistory(records) {
   historyList.innerHTML = "";
 
   if (records.length === 0) {
-    historyList.innerHTML = '<p class="empty-state">まだ記録がありません。</p>';
+    historyList.innerHTML = searchTerm
+      ? '<p class="empty-state">該当する記録がありません。</p>'
+      : '<p class="empty-state">まだ記録がありません。</p>';
     return;
   }
 
@@ -128,7 +161,9 @@ function renderHistory(records) {
   [...groupedRecords.entries()]
     .sort(([dateA], [dateB]) => dateB.localeCompare(dateA))
     .forEach(([, dateRecords]) => {
-      dateRecords.sort((a, b) => b.parsedDate.getTime() - a.parsedDate.getTime());
+      dateRecords.sort(
+        (a, b) => b.parsedDate.getTime() - a.parsedDate.getTime(),
+      );
 
       const section = document.createElement("section");
       section.className = "history-day";
@@ -142,16 +177,37 @@ function renderHistory(records) {
     });
 }
 
+function applyFilter() {
+  const term = searchTerm.replace(/\s+/g, "");
+  const filtered = term
+    ? allRecords.filter((record) =>
+        String(record.foodName || "")
+          .replace(/\s+/g, "")
+          .includes(term),
+      )
+    : allRecords;
+  renderHistory(filtered);
+}
+
+searchInput.addEventListener("input", () => {
+  searchTerm = searchInput.value.trim();
+  applyFilter();
+});
+
 async function loadRecords() {
   try {
     reloadButton.disabled = true;
     showMessage("履歴を読み込んでいます...", "info");
     const data = await getRecords();
-    renderHistory(Array.isArray(data.records) ? data.records : []);
+    allRecords = Array.isArray(data.records) ? data.records : [];
+    applyFilter();
     showMessage("", "info");
   } catch (error) {
     console.error(error);
-    showMessage("履歴の取得に失敗しました。API URLの設定や通信状況を確認してください。", "error");
+    showMessage(
+      "履歴の取得に失敗しました。API URLの設定や通信状況を確認してください。",
+      "error",
+    );
   } finally {
     reloadButton.disabled = false;
   }

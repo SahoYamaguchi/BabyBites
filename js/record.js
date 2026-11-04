@@ -1,10 +1,25 @@
-import { addMasterFood, addRecords, getFoodList, getFoodMaster } from "./api.js";
+import {
+  addMasterFood,
+  addRecords,
+  getFoodList,
+  getFoodMaster,
+} from "./api.js";
 
-const CATEGORY_ORDER = ["炭水化物", "野菜", "果物", "タンパク質", "乳製品", "その他"];
+const CATEGORY_ORDER = [
+  "炭水化物",
+  "野菜",
+  "果物",
+  "タンパク質",
+  "乳製品",
+  "ベビーフード",
+  "その他",
+];
 
 const selectedItemsEl = document.querySelector("#selected-items");
 const openFoodSearchButton = document.querySelector("#open-food-search-button");
-const openFoodHistoryButton = document.querySelector("#open-food-history-button");
+const openFoodHistoryButton = document.querySelector(
+  "#open-food-history-button",
+);
 const form = document.querySelector("#record-form");
 const mealTypeInput = document.querySelector("#meal-type");
 const mealTypeButtons = document.querySelectorAll(".meal-type-button");
@@ -22,8 +37,12 @@ const foodSearchModalList = document.querySelector("#food-search-modal-list");
 const foodSearchModalDone = document.querySelector("#food-search-modal-done");
 
 const foodHistoryModal = document.querySelector("#food-history-modal");
-const foodHistoryModalClose = document.querySelector("#food-history-modal-close");
-const foodHistoryModalInput = document.querySelector("#food-history-modal-input");
+const foodHistoryModalClose = document.querySelector(
+  "#food-history-modal-close",
+);
+const foodHistoryModalInput = document.querySelector(
+  "#food-history-modal-input",
+);
 const foodHistoryModalList = document.querySelector("#food-history-modal-list");
 
 const quickAddDetails = document.querySelector("#quick-add");
@@ -45,7 +64,9 @@ let historySearchTerm = "";
 let concentrationPickerGroup = null; // { displayGroup, category, names } (お粥などの濃度選択中に使う)
 
 function formatDateTimeLocal(date = new Date()) {
-  const offsetDate = new Date(date.getTime() - date.getTimezoneOffset() * 60_000);
+  const offsetDate = new Date(
+    date.getTime() - date.getTimezoneOffset() * 60_000,
+  );
   return offsetDate.toISOString().slice(0, 16);
 }
 
@@ -63,12 +84,20 @@ function showMessage(message, type = "info", autoHide = false) {
 }
 
 function normalizeFoods(foodList) {
-  return [...new Set(foodList.map((food) => String(food).trim()).filter(Boolean))];
+  return [
+    ...new Set(foodList.map((food) => String(food).trim()).filter(Boolean)),
+  ];
 }
 
 function escapeHtml(value) {
   return String(value).replace(/[&<>'"]/g, (character) => {
-    const entities = { "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" };
+    const entities = {
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      "'": "&#39;",
+      '"': "&quot;",
+    };
     return entities[character];
   });
 }
@@ -113,9 +142,13 @@ function renderSelectedItems() {
     const spoonSelect = document.createElement("select");
     spoonSelect.setAttribute("aria-label", `${item.foodName}のさじ杯数`);
     spoonSelect.append(new Option("さじ 未選択", ""));
-    SPOON_OPTIONS.forEach((value) => spoonSelect.append(new Option(`${value}杯`, value)));
+    SPOON_OPTIONS.forEach((value) =>
+      spoonSelect.append(new Option(`${value}杯`, value)),
+    );
     spoonSelect.value = item.spoon;
-    spoonSelect.addEventListener("change", () => { item.spoon = spoonSelect.value; });
+    spoonSelect.addEventListener("change", () => {
+      item.spoon = spoonSelect.value;
+    });
 
     const gramInput = document.createElement("input");
     gramInput.type = "number";
@@ -125,13 +158,19 @@ function renderSelectedItems() {
     gramInput.placeholder = "g";
     gramInput.setAttribute("aria-label", `${item.foodName}のグラム数`);
     gramInput.value = item.gram;
-    gramInput.addEventListener("input", () => { item.gram = gramInput.value.trim(); });
+    gramInput.addEventListener("input", () => {
+      item.gram = gramInput.value.trim();
+    });
 
     const ratioSelect = document.createElement("select");
     ratioSelect.setAttribute("aria-label", `${item.foodName}の食べた割合`);
-    RATIO_OPTIONS.forEach((value) => ratioSelect.append(new Option(`食べた割合 ${value}`, value)));
+    RATIO_OPTIONS.forEach((value) =>
+      ratioSelect.append(new Option(`食べた割合 ${value}`, value)),
+    );
     ratioSelect.value = item.ratio;
-    ratioSelect.addEventListener("change", () => { item.ratio = ratioSelect.value; });
+    ratioSelect.addEventListener("change", () => {
+      item.ratio = ratioSelect.value;
+    });
 
     fields.append(spoonSelect, gramInput, ratioSelect);
     row.append(head, fields);
@@ -168,7 +207,10 @@ function handleFoodSelection(foodName) {
       .map((food) => food.name);
 
     if (groupNames.length > 1) {
-      concentrationPickerGroup = { displayGroup: entry.displayGroup, names: groupNames };
+      concentrationPickerGroup = {
+        displayGroup: entry.displayGroup,
+        names: groupNames,
+      };
       modalSearchTerm = "";
       foodSearchModalInput.value = "";
       foodSearchModal.hidden = false;
@@ -183,14 +225,20 @@ function handleFoodSelection(foodName) {
 function renderMealTypes() {
   mealTypeInput.value = selectedMealType;
   mealTypeButtons.forEach((button) => {
-    button.setAttribute("aria-pressed", String(button.dataset.mealType === selectedMealType));
+    button.setAttribute(
+      "aria-pressed",
+      String(button.dataset.mealType === selectedMealType),
+    );
   });
 }
 
 function renderReactions() {
   reactionInput.value = selectedReaction;
   reactionButtons.forEach((button) => {
-    button.setAttribute("aria-pressed", String(button.dataset.reaction === selectedReaction));
+    button.setAttribute(
+      "aria-pressed",
+      String(button.dataset.reaction === selectedReaction),
+    );
   });
 }
 
@@ -321,10 +369,15 @@ function groupItemsByCategory(items) {
 
   const orderedCategories = [
     ...CATEGORY_ORDER.filter((category) => groups.has(category)),
-    ...[...groups.keys()].filter((category) => !CATEGORY_ORDER.includes(category)),
+    ...[...groups.keys()].filter(
+      (category) => !CATEGORY_ORDER.includes(category),
+    ),
   ];
 
-  return orderedCategories.map((category) => ({ category, items: groups.get(category) }));
+  return orderedCategories.map((category) => ({
+    category,
+    items: groups.get(category),
+  }));
 }
 
 // 表示グループ単位でまとめる。1グループに複数の食材名マスタが含まれる場合、
@@ -365,11 +418,17 @@ function toggleFoodFromMaster(foodName) {
 }
 
 function refreshModalSelectionState() {
-  foodSearchModalList.querySelectorAll("button[data-names]").forEach((button) => {
-    const names = JSON.parse(button.dataset.names);
-    button.setAttribute("aria-pressed", String(names.some((name) => hasItem(name))));
-  });
-  foodSearchModalDone.textContent = selectedItems.length > 0 ? `完了(${selectedItems.length}件選択中)` : "完了";
+  foodSearchModalList
+    .querySelectorAll("button[data-names]")
+    .forEach((button) => {
+      const names = JSON.parse(button.dataset.names);
+      button.setAttribute(
+        "aria-pressed",
+        String(names.some((name) => hasItem(name))),
+      );
+    });
+  foodSearchModalDone.textContent =
+    selectedItems.length > 0 ? `完了(${selectedItems.length}件選択中)` : "完了";
 }
 
 function createMasterButton(label, names, onClick) {
@@ -378,7 +437,10 @@ function createMasterButton(label, names, onClick) {
   button.className = "food-button";
   button.textContent = label;
   button.dataset.names = JSON.stringify(names);
-  button.setAttribute("aria-pressed", String(names.some((name) => hasItem(name))));
+  button.setAttribute(
+    "aria-pressed",
+    String(names.some((name) => hasItem(name))),
+  );
   button.addEventListener("click", onClick);
   return button;
 }
@@ -389,7 +451,9 @@ const PICKER_EXCLUDED_NAMES = new Set(["つぶし粥"]);
 
 function renderConcentrationPicker() {
   const { displayGroup, names } = concentrationPickerGroup;
-  const selectableNames = names.filter((name) => !PICKER_EXCLUDED_NAMES.has(name));
+  const selectableNames = names.filter(
+    (name) => !PICKER_EXCLUDED_NAMES.has(name),
+  );
   const namesToShow = selectableNames.length > 0 ? selectableNames : names;
 
   foodSearchModalList.innerHTML = "";
@@ -413,7 +477,9 @@ function renderConcentrationPicker() {
   grid.className = "food-grid";
 
   namesToShow.forEach((name) => {
-    grid.append(createMasterButton(name, [name], () => toggleFoodFromMaster(name)));
+    grid.append(
+      createMasterButton(name, [name], () => toggleFoodFromMaster(name)),
+    );
   });
 
   foodSearchModalList.append(grid);
@@ -454,7 +520,11 @@ function renderFoodSearchModalList() {
       grid.className = "food-grid";
 
       items.forEach((food) => {
-        grid.append(createMasterButton(food.name, [food.name], () => toggleFoodFromMaster(food.name)));
+        grid.append(
+          createMasterButton(food.name, [food.name], () =>
+            toggleFoodFromMaster(food.name),
+          ),
+        );
       });
 
       details.append(grid);
@@ -481,14 +551,16 @@ function renderFoodSearchModalList() {
     grid.className = "food-grid";
 
     items.forEach((group) => {
-      grid.append(createMasterButton(group.displayGroup, group.names, () => {
-        if (group.names.length > 1) {
-          concentrationPickerGroup = group;
-          renderFoodSearchModalList();
-        } else {
-          toggleFoodFromMaster(group.names[0]);
-        }
-      }));
+      grid.append(
+        createMasterButton(group.displayGroup, group.names, () => {
+          if (group.names.length > 1) {
+            concentrationPickerGroup = group;
+            renderFoodSearchModalList();
+          } else {
+            toggleFoodFromMaster(group.names[0]);
+          }
+        }),
+      );
     });
 
     details.append(grid);
@@ -507,7 +579,9 @@ async function loadFoodMasterIfNeeded() {
 
   try {
     const data = await getFoodMaster();
-    foodMaster = normalizeFoodMaster(Array.isArray(data.foods) ? data.foods : []);
+    foodMaster = normalizeFoodMaster(
+      Array.isArray(data.foods) ? data.foods : [],
+    );
     foodMasterLoaded = true;
     if (!foodSearchModal.hidden) {
       renderFoodSearchModalList();
@@ -577,11 +651,18 @@ quickAddButton.addEventListener("click", async () => {
   try {
     quickAddButton.disabled = true;
     showQuickAddStatus("追加しています...");
-    const data = await addMasterFood({ name, category: quickAddCategory.value });
+    const data = await addMasterFood({
+      name,
+      category: quickAddCategory.value,
+    });
     const addedName = data.name || name;
 
     if (!foodMaster.some((food) => food.name === addedName)) {
-      foodMaster.push({ name: addedName, category: data.category || quickAddCategory.value, displayGroup: addedName });
+      foodMaster.push({
+        name: addedName,
+        category: data.category || quickAddCategory.value,
+        displayGroup: addedName,
+      });
     }
 
     quickAddName.value = "";
@@ -590,7 +671,9 @@ quickAddButton.addEventListener("click", async () => {
     selectFood(addedName);
     renderFoodSearchModalList();
     showMessage(
-      data.added === false ? `「${addedName}」はすでに登録されているので、そのまま選びました。` : `「${addedName}」を食材マスタに追加しました。`,
+      data.added === false
+        ? `「${addedName}」はすでに登録されているので、そのまま選びました。`
+        : `「${addedName}」を食材マスタに追加しました。`,
       "success",
       true,
     );
@@ -614,7 +697,10 @@ form.addEventListener("submit", async (event) => {
 
   const missing = selectedItems.find((item) => !item.gram && !item.spoon);
   if (missing) {
-    showMessage(`「${missing.foodName}」のグラム数かさじ杯数を入力してください。`, "error");
+    showMessage(
+      `「${missing.foodName}」のグラム数かさじ杯数を入力してください。`,
+      "error",
+    );
     return;
   }
 
@@ -639,13 +725,18 @@ form.addEventListener("submit", async (event) => {
     resetForm();
     const firstFoods = data.firstTimeFoods || [];
     showMessage(
-      firstFoods.length > 0 ? `初めての食材です!🎉 ${firstFoods.join("、")}` : `${items.length}品を記録しました。`,
+      firstFoods.length > 0
+        ? `初めての食材です!🎉 ${firstFoods.join("、")}`
+        : `${items.length}品を記録しました。`,
       "success",
       true,
     );
   } catch (error) {
     console.error(error);
-    showMessage("記録に失敗しました。入力内容を確認して再度お試しください。", "error");
+    showMessage(
+      "記録に失敗しました。入力内容を確認して再度お試しください。",
+      "error",
+    );
   } finally {
     submitButton.disabled = false;
   }

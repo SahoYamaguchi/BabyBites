@@ -18,6 +18,7 @@
         <a href="foods.html">図鑑</a>
         <a href="insta.html">投稿</a>
         <a href="nutrition.html">栄養素</a>
+        <a href="recipe.html">レシピ</a>
         <a href="settings.html">設定</a>
       </nav>
     </header>
@@ -27,46 +28,137 @@
         <div class="section-title-row">
           <h2 id="food-heading">食材を選ぶ</h2>
           <div class="food-heading-actions">
-            <button class="secondary-button" id="open-food-history-button" type="button">履歴</button>
-            <button class="secondary-button" id="open-food-search-button" type="button">食材を探す</button>
+            <button
+              class="secondary-button"
+              id="open-food-history-button"
+              type="button"
+            >
+              履歴
+            </button>
+            <button
+              class="secondary-button"
+              id="open-food-search-button"
+              type="button"
+            >
+              食材を探す
+            </button>
           </div>
         </div>
-        <p class="helper-text">「履歴」か「食材を探す」から選びます。「食材を探す」では複数まとめて選べます。</p>
+        <p class="helper-text">
+          「履歴」か「食材を探す」から選びます。「食材を探す」では複数まとめて選べます。
+        </p>
       </section>
 
       <form class="card record-form" id="record-form">
         <div class="field-group">
           <span class="field-label">記録する食材</span>
-          <p class="helper-text">上の「履歴」「食材を探す」から選ぶと、ここに追加されます。複数選べます。グラム数かさじ杯数のどちらかを入力してください(両方入力した場合はグラム数を使用します)。</p>
+          <p class="helper-text">
+            上の「履歴」「食材を探す」から選ぶと、ここに追加されます。複数選べます。グラム数かさじ杯数のどちらかを入力してください(両方入力した場合はグラム数を使用します)。
+          </p>
           <div class="item-list" id="selected-items" aria-live="polite"></div>
         </div>
 
         <div class="field-group">
-          <span class="field-label">食べた反応 <span class="optional">任意</span></span>
+          <span class="field-label"
+            >食べた反応 <span class="optional">任意</span></span
+          >
           <input id="reaction" name="reaction" type="hidden" />
-          <div class="reaction-grid" id="reaction-buttons" aria-label="食べた反応を選択">
-            <button class="reaction-button emoji-choice-button" type="button" data-reaction="美味しい" aria-pressed="false"><span class="choice-emoji" aria-hidden="true">😋</span><span class="choice-label">美味しい</span></button>
-            <button class="reaction-button emoji-choice-button" type="button" data-reaction="普通" aria-pressed="false"><span class="choice-emoji" aria-hidden="true">😐</span><span class="choice-label">普通</span></button>
-            <button class="reaction-button emoji-choice-button" type="button" data-reaction="いまいち" aria-pressed="false"><span class="choice-emoji" aria-hidden="true">😖</span><span class="choice-label">いまいち</span></button>
+          <div
+            class="reaction-grid"
+            id="reaction-buttons"
+            aria-label="食べた反応を選択"
+          >
+            <button
+              class="reaction-button emoji-choice-button"
+              type="button"
+              data-reaction="美味しい"
+              aria-pressed="false"
+            >
+              <span class="choice-emoji" aria-hidden="true">😋</span
+              ><span class="choice-label">美味しい</span>
+            </button>
+            <button
+              class="reaction-button emoji-choice-button"
+              type="button"
+              data-reaction="普通"
+              aria-pressed="false"
+            >
+              <span class="choice-emoji" aria-hidden="true">😐</span
+              ><span class="choice-label">普通</span>
+            </button>
+            <button
+              class="reaction-button emoji-choice-button"
+              type="button"
+              data-reaction="いまいち"
+              aria-pressed="false"
+            >
+              <span class="choice-emoji" aria-hidden="true">😖</span
+              ><span class="choice-label">いまいち</span>
+            </button>
           </div>
           <p class="helper-text">もう一度タップすると未選択に戻せます。</p>
         </div>
 
         <div class="field-group">
-          <span class="field-label">食事区分 <span class="optional">任意</span></span>
+          <span class="field-label"
+            >食事区分 <span class="optional">任意</span></span
+          >
           <input id="meal-type" name="mealType" type="hidden" />
-          <div class="meal-type-grid" id="meal-type-buttons" aria-label="食事区分を選択">
-            <button class="meal-type-button emoji-choice-button" type="button" data-meal-type="朝ごはん" aria-pressed="false"><span class="choice-emoji" aria-hidden="true">🌅</span><span class="choice-label">朝ごはん</span></button>
-            <button class="meal-type-button emoji-choice-button" type="button" data-meal-type="昼ごはん" aria-pressed="false"><span class="choice-emoji" aria-hidden="true">☀️</span><span class="choice-label">昼ごはん</span></button>
-            <button class="meal-type-button emoji-choice-button" type="button" data-meal-type="おやつ" aria-pressed="false"><span class="choice-emoji" aria-hidden="true">🍪</span><span class="choice-label">おやつ</span></button>
-            <button class="meal-type-button emoji-choice-button" type="button" data-meal-type="夜ごはん" aria-pressed="false"><span class="choice-emoji" aria-hidden="true">🌙</span><span class="choice-label">夜ごはん</span></button>
+          <div
+            class="meal-type-grid"
+            id="meal-type-buttons"
+            aria-label="食事区分を選択"
+          >
+            <button
+              class="meal-type-button emoji-choice-button"
+              type="button"
+              data-meal-type="朝ごはん"
+              aria-pressed="false"
+            >
+              <span class="choice-emoji" aria-hidden="true">🌅</span
+              ><span class="choice-label">朝ごはん</span>
+            </button>
+            <button
+              class="meal-type-button emoji-choice-button"
+              type="button"
+              data-meal-type="昼ごはん"
+              aria-pressed="false"
+            >
+              <span class="choice-emoji" aria-hidden="true">☀️</span
+              ><span class="choice-label">昼ごはん</span>
+            </button>
+            <button
+              class="meal-type-button emoji-choice-button"
+              type="button"
+              data-meal-type="おやつ"
+              aria-pressed="false"
+            >
+              <span class="choice-emoji" aria-hidden="true">🍪</span
+              ><span class="choice-label">おやつ</span>
+            </button>
+            <button
+              class="meal-type-button emoji-choice-button"
+              type="button"
+              data-meal-type="夜ごはん"
+              aria-pressed="false"
+            >
+              <span class="choice-emoji" aria-hidden="true">🌙</span
+              ><span class="choice-label">夜ごはん</span>
+            </button>
           </div>
           <p class="helper-text">もう一度タップすると未選択に戻せます。</p>
         </div>
 
         <label class="field-group" for="memo">
-          <span class="field-label">メモ <span class="optional">任意</span></span>
-          <textarea id="memo" name="memo" rows="4" placeholder="食べ方や反応など"></textarea>
+          <span class="field-label"
+            >メモ <span class="optional">任意</span></span
+          >
+          <textarea
+            id="memo"
+            name="memo"
+            rows="4"
+            placeholder="食べ方や反応など"
+          ></textarea>
         </label>
 
         <label class="field-group" for="date-time">
@@ -74,44 +166,99 @@
           <input id="date-time" name="date" type="datetime-local" required />
         </label>
 
-        <div class="status-message" id="status-message" role="status" aria-live="polite"></div>
+        <div
+          class="status-message"
+          id="status-message"
+          role="status"
+          aria-live="polite"
+        ></div>
       </form>
     </main>
 
     <div class="fixed-submit-bar">
-      <button class="primary-button" id="submit-button" type="submit" form="record-form">記録する</button>
+      <button
+        class="primary-button"
+        id="submit-button"
+        type="submit"
+        form="record-form"
+      >
+        記録する
+      </button>
     </div>
 
     <div class="modal-overlay" id="food-history-modal" hidden>
-      <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="food-history-modal-heading">
+      <div
+        class="modal-card"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="food-history-modal-heading"
+      >
         <div class="modal-header">
           <h2 id="food-history-modal-heading">履歴から選ぶ</h2>
-          <button class="modal-close-button" id="food-history-modal-close" type="button" aria-label="閉じる">×</button>
+          <button
+            class="modal-close-button"
+            id="food-history-modal-close"
+            type="button"
+            aria-label="閉じる"
+          >
+            ×
+          </button>
         </div>
         <label class="field-group" for="food-history-modal-input">
           <span class="field-label">食材を検索</span>
-          <input id="food-history-modal-input" type="search" placeholder="例: しらす" autocomplete="off" />
+          <input
+            id="food-history-modal-input"
+            type="search"
+            placeholder="例: しらす"
+            autocomplete="off"
+          />
         </label>
-        <div class="food-grid" id="food-history-modal-list" aria-live="polite"></div>
+        <div
+          class="food-grid"
+          id="food-history-modal-list"
+          aria-live="polite"
+        ></div>
       </div>
     </div>
 
     <div class="modal-overlay" id="food-search-modal" hidden>
-      <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="food-search-modal-heading">
+      <div
+        class="modal-card"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="food-search-modal-heading"
+      >
         <div class="modal-header">
           <h2 id="food-search-modal-heading">食材を選ぶ</h2>
-          <button class="modal-close-button" id="food-search-modal-close" type="button" aria-label="閉じる">×</button>
+          <button
+            class="modal-close-button"
+            id="food-search-modal-close"
+            type="button"
+            aria-label="閉じる"
+          >
+            ×
+          </button>
         </div>
         <label class="field-group" for="food-search-modal-input">
           <span class="field-label">食材を検索</span>
-          <input id="food-search-modal-input" type="search" placeholder="例: しらす" autocomplete="off" />
+          <input
+            id="food-search-modal-input"
+            type="search"
+            placeholder="例: しらす"
+            autocomplete="off"
+          />
         </label>
         <details class="quick-add" id="quick-add">
           <summary>＋ 新しい食材を追加(まだ食べたことがない食材)</summary>
           <div class="quick-add-fields">
             <label class="field-group" for="quick-add-name">
               <span class="field-label">食材名</span>
-              <input id="quick-add-name" type="text" placeholder="例: あんこ" autocomplete="off" />
+              <input
+                id="quick-add-name"
+                type="text"
+                placeholder="例: あんこ"
+                autocomplete="off"
+              />
             </label>
             <label class="field-group" for="quick-add-category">
               <span class="field-label">カテゴリ</span>
@@ -121,17 +268,36 @@
                 <option value="果物">果物</option>
                 <option value="タンパク質">タンパク質</option>
                 <option value="乳製品">乳製品</option>
+                <option value="ベビーフード">ベビーフード</option>
                 <option value="その他" selected>その他</option>
               </select>
             </label>
-            <button class="secondary-button" id="quick-add-button" type="button">追加して選ぶ</button>
+            <button
+              class="secondary-button"
+              id="quick-add-button"
+              type="button"
+            >
+              追加して選ぶ
+            </button>
             <p class="helper-text" id="quick-add-status" role="status"></p>
-            <p class="helper-text">栄養素は登録されないため、栄養素チェックの集計には含まれません。</p>
+            <p class="helper-text">
+              栄養素は登録されないため、栄養素チェックの集計には含まれません。
+            </p>
           </div>
         </details>
-        <div class="food-category-list" id="food-search-modal-list" aria-live="polite"></div>
+        <div
+          class="food-category-list"
+          id="food-search-modal-list"
+          aria-live="polite"
+        ></div>
         <div class="modal-done-bar">
-          <button class="primary-button" id="food-search-modal-done" type="button">完了</button>
+          <button
+            class="primary-button"
+            id="food-search-modal-done"
+            type="button"
+          >
+            完了
+          </button>
         </div>
       </div>
     </div>
