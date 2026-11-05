@@ -52,7 +52,7 @@ const quickAddButton = document.querySelector("#quick-add-button");
 const quickAddStatus = document.querySelector("#quick-add-status");
 
 let recordedFoods = []; // これまで記録した食材(履歴モーダル用)
-let selectedItems = []; // [{ foodName, spoon, gram, ratio }] まとめて記録する食材
+let selectedItems = []; // [{ foodName, spoon, gram, ratio(0〜100の数字の文字列) }] まとめて記録する食材
 let selectedMealType = "";
 let selectedReaction = "";
 let messageTimer;
@@ -102,7 +102,6 @@ function escapeHtml(value) {
   });
 }
 
-const RATIO_OPTIONS = ["20%", "50%", "80%", "100%"];
 const SPOON_OPTIONS = ["0.5", "1", "1.5", "2", "2.5", "3", "3.5", "4"];
 
 function hasItem(foodName) {
@@ -154,7 +153,7 @@ function renderSelectedItems() {
     gramInput.type = "number";
     gramInput.inputMode = "decimal";
     gramInput.min = "0";
-    gramInput.step = "0.1";
+    gramInput.step = "any";
     gramInput.placeholder = "g";
     gramInput.setAttribute("aria-label", `${item.foodName}のグラム数`);
     gramInput.value = item.gram;
@@ -162,17 +161,24 @@ function renderSelectedItems() {
       item.gram = gramInput.value.trim();
     });
 
-    const ratioSelect = document.createElement("select");
-    ratioSelect.setAttribute("aria-label", `${item.foodName}の食べた割合`);
-    RATIO_OPTIONS.forEach((value) =>
-      ratioSelect.append(new Option(`食べた割合 ${value}`, value)),
-    );
-    ratioSelect.value = item.ratio;
-    ratioSelect.addEventListener("change", () => {
-      item.ratio = ratioSelect.value;
+    // 食べた割合は自由入力(0〜100の数字。空欄なら100%扱い)
+    const ratioWrap = document.createElement("label");
+    ratioWrap.className = "ratio-field";
+    const ratioInput = document.createElement("input");
+    ratioInput.type = "number";
+    ratioInput.inputMode = "decimal";
+    ratioInput.min = "0";
+    ratioInput.max = "100";
+    ratioInput.step = "any";
+    ratioInput.placeholder = "100";
+    ratioInput.setAttribute("aria-label", `${item.foodName}の食べた割合(%)`);
+    ratioInput.value = item.ratio;
+    ratioInput.addEventListener("input", () => {
+      item.ratio = ratioInput.value.trim();
     });
+    ratioWrap.append("食べた割合", ratioInput, "%");
 
-    fields.append(spoonSelect, gramInput, ratioSelect);
+    fields.append(spoonSelect, gramInput, ratioWrap);
     row.append(head, fields);
     selectedItemsEl.append(row);
   });
@@ -182,7 +188,7 @@ function addItem(foodName) {
   if (!foodName || hasItem(foodName)) {
     return;
   }
-  selectedItems.push({ foodName, spoon: "", gram: "", ratio: "100%" });
+  selectedItems.push({ foodName, spoon: "", gram: "", ratio: "100" });
   renderSelectedItems();
 }
 
@@ -704,9 +710,24 @@ form.addEventListener("submit", async (event) => {
     return;
   }
 
+  const badRatio = selectedItems.find((item) => {
+    if (item.ratio === "") {
+      return false;
+    }
+    const value = Number(item.ratio);
+    return Number.isNaN(value) || value <= 0 || value > 100;
+  });
+  if (badRatio) {
+    showMessage(
+      `「${badRatio.foodName}」の食べた割合は 1〜100 の数字で入力してください。`,
+      "error",
+    );
+    return;
+  }
+
   const items = selectedItems.map((item) => ({
     foodName: item.foodName,
-    amountLabel: item.ratio,
+    amountLabel: `${item.ratio === "" ? 100 : Number(item.ratio)}%`,
     amountGram: item.gram ? Number(item.gram) : "",
     spoonCount: item.spoon,
   }));
